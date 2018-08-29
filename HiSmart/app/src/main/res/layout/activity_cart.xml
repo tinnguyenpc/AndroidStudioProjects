@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="10">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10">
+
+        <ListView
+            android:id="@+id/lvmon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"></ListView>
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clickable="false"
+        android:descendantFocusability="blocksDescendants"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:padding="7dp"
+        android:weightSum="10"
+
+
+        >
+
+        <Button
+            android:id="@+id/thanhtoan"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="5dp"
+            android:layout_weight="5"
+            android:background="@drawable/custombutton"
+            android:text="Thanh Toán"
+            android:textColor="#ffffff"
+             />
+
+        <Button
+            android:id="@+id/goimon"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:background="@drawable/custombutton"
+            android:text="Gọi Món"
+            android:textColor="#ffffff"
+
+
+
+            />
+
+
+    </LinearLayout>
+
+</LinearLayout>

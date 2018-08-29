@@ -1,0 +1,37 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion '27.0.3'
+
+    defaultConfig {
+        applicationId "com.truiton.mobile.vision.qrcode"
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+configurations {
+    // Initializes a placeholder for the freeDebugRuntimeOnly dependency
+    // configuration.
+    freeDebugRuntimeOnly {}
+}
+
+dependencies {
+    freeDebugRuntimeOnly fileTree(dir: 'libs', include: ['*.jar'])
+    // Adds a remote binary dependency only for local tests.
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    api 'com.google.android.gms:play-services-vision:11.4.0'
+
+    // Adds a remote binary dependency only for the instrumented test APK.
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}

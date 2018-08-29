@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="10">
+
+    <TextView
+        android:id="@+id/sNo"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/cell_shape"
+
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:singleLine="true"
+        android:text="STT" />
+
+    <TextView
+        android:id="@+id/product"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4.5"
+        android:background="@drawable/cell_shape"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:singleLine="true"
+        android:text="Tên món"
+        android:textColor="#006600" />
+
+    <TextView
+        android:id="@+id/category"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3"
+        android:background="@drawable/cell_shape"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:singleLine="true"
+        android:text="chọn" />
+
+    <TextView
+        android:id="@+id/price"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4.5"
+        android:background="@drawable/cell_shape"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:singleLine="true"
+        android:text="Giá"
+        android:textColor="#663300" />
+
+</LinearLayout>

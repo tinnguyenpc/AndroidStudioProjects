@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "85441779823",
+    "firebase_url": "https://hi-smart.firebaseio.com",
+    "project_id": "hi-smart",
+    "storage_bucket": "hi-smart.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85441779823:android:1c89620f0f4f9cf0",
+        "android_client_info": {
+          "package_name": "com.example.hieul.hismart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "85441779823-vi6tla51jfl85eqsvq1n1a4aiks1dlph.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hieul.testfirebase",
+            "certificate_hash": "a4a7d44358e58a682d1c2f400ee12baab068478e"
+          }
+        },
+        {
+          "client_id": "85441779823-8kc3numok17udqiiuu97u3b998tj87if.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkrPV4gEt_L-78tMCwNnk7haJH1ZKKbRA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "85441779823-8kc3numok17udqiiuu97u3b998tj87if.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
