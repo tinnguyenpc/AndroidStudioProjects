@@ -4,15 +4,19 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -21,19 +25,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -42,33 +43,40 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.zxing.Result;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import java.io.BufferedReader;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
     String gettimeserver = "http://greenspeed.vn/qrcode/api/servertime.php";
     String getdateserver = "http://greenspeed.vn/qrcode/api/serverdate.php";
+    String pushdatae = "http://greenspeed.vn/qrcode/api/input_data.php";
     String folder_cam = "";
     File filecam;
     Uri imageUri;
     String t_date="";
     String t_time="";
+
+    Bitmap selectedBitmap;
 
 
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
@@ -112,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
         if(checkAndRequestPermissions()) {
             // carry on the normal flow, as the case of  permissions  granted.
             new Handler().postDelayed(new Runnable() {
-
 
                 @Override
                 public void run() {
@@ -230,12 +237,27 @@ public class MainActivity extends AppCompatActivity {
 
     public void QR_Scan() {
 
-        //intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
-        intentIntegrator.setPrompt(" ");
-        //intentIntegrator.setCameraId(0);  // Use a specific camera of the device
-        intentIntegrator.setBeepEnabled(true);
+//        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
+        intentIntegrator.setPrompt(" t");
+        intentIntegrator.setCameraId(0);  // Use a specific camera of the device
+//        intentIntegrator.setBeepEnabled(true);
         intentIntegrator.setBarcodeImageEnabled(false);
         intentIntegrator.initiateScan();
+
+    }
+
+    public void handleResult(Result rawResult) {
+        // Do something with the result here</p>
+//        Log.e(&quot;handler&quot;, rawResult.getText()); // Prints scan results
+//        Log.e(&quot;handler&quot;, rawResult.getBarcodeFormat().toString()); // Prints the scan format (qrcode)
+        // show the scanner result into dialog box.<br />
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//                builder.setTitle(&quot;Scan Result&quot;);
+                builder.setMessage(rawResult.getText());
+                AlertDialog alert1 = builder.create();
+                alert1.show();
+       // If you would like to resume scanning, call this method below:
+        // mScannerView.resumeCameraPreview(this);
     }
 
     // Get the results QR:
@@ -248,6 +270,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 t_qrcode =resultQR.getContents();
                 Cursor c_qrcode = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
+                Toast.makeText(this, resultQR.getContents(), Toast.LENGTH_LONG).show();
+
                 int count_qrcode = c_qrcode.getCount();
                 if(count_qrcode==0){
                     Toast.makeText(this, "Hệ thống không chấp nhận mã QR này", Toast.LENGTH_LONG).show();
@@ -294,9 +318,7 @@ public class MainActivity extends AppCompatActivity {
                                     .setIcon(android.R.drawable.ic_dialog_alert)
                                     .show();
                         } else {
-                            t_date = getdatetimeserver(getdateserver);
-                            t_time = getdatetimeserver(gettimeserver);
-
+                           getdatetimeserver();
                             if((t_date=="")|(t_time=="")){
                                 Calendar c = Calendar.getInstance();
                                 System.out.println("Current time => " + c.getTime());
@@ -359,9 +381,7 @@ public class MainActivity extends AppCompatActivity {
                                     .setIcon(android.R.drawable.ic_dialog_alert)
                                     .show();
                         } else {
-                            t_date = getdatetimeserver(getdateserver);
-                            t_time = getdatetimeserver(gettimeserver);
-
+                            getdatetimeserver();
                             if((t_date=="")|(t_time=="")){
                                 Calendar c = Calendar.getInstance();
                                 System.out.println("Current time => " + c.getTime());
@@ -405,6 +425,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
             DB.updatedata(tb_qrcode,"active=1"+",session_app='"+t_time+"'","code='"+t_qrcode+"'");
             DB.insterdata(tb_data,"'"+t_time+"','"+t_qrcode+"','"+filecam+"','"+0+"'");
+            selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
+            uploadPictureToServer(pushdatae,t_qrcode,t_time,filename);
         }
         else{
             Toast.makeText(this, "Lưu hình ảnh thất bại", Toast.LENGTH_SHORT).show();
@@ -435,15 +457,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private String getdatetimeserver( String t_url){
-        final String[] t_result = {""};
+    private void  getdatetimeserver(){
         RequestQueue t_request = Volley.newRequestQueue(this);
-        StringRequest t_srequest = new StringRequest(Request.Method.GET, t_url,
+        StringRequest t_srequest = new StringRequest(Request.Method.GET, getdateserver,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
 //                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
-                        t_result[0] = response.trim();
+                        t_date = response.trim();
+                        Log.d(TAG, "My t_date: "+t_date);
                     }
                 },
                 new Response.ErrorListener() {
@@ -456,7 +478,26 @@ public class MainActivity extends AppCompatActivity {
         );
         t_request.add(t_srequest);
 
-        return t_result[0];
+        RequestQueue t_request2 = Volley.newRequestQueue(this);
+        StringRequest t_srequest2 = new StringRequest(Request.Method.GET, gettimeserver,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+//                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
+                        t_time = response.trim();
+                        Log.d(TAG, "My t_date: "+t_time);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+//                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ", Toast.LENGTH_SHORT).show();
+                        Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
+                    }
+                }
+        );
+        t_request2.add(t_srequest2);
+
     }
 
     private void capturePicture() {
@@ -673,6 +714,80 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         dialog.show();
+    }
+
+    public class UploadToServerTask extends AsyncTask<Void, Void, String> {
+
+        //URL để tải hình lên server
+        private Activity context=null;
+        private ProgressDialog progressDialog=null;
+        private String tt_base64;
+        private String tt_qr_code;
+        private String tt_session_app;
+        private String tt_img_name;
+
+        public UploadToServerTask(Activity context, String t_basae64, String qr_code, String session_app, String img_name)
+        {
+            this.context=context;
+            this.tt_base64=t_basae64;
+            this.tt_qr_code=qr_code;
+            this.tt_session_app=session_app;
+            this.tt_img_name=img_name;
+            this.progressDialog=new ProgressDialog(this.context);
+        }
+        protected void onPreExecute() {
+            super.onPreExecute();
+            this.progressDialog.setMessage("Vui lòng chờ hệ thống đang upload hình!");
+            this.progressDialog.show();
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+//Coding gửi hình lên Server
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            nameValuePairs.add(new BasicNameValuePair("img_base64", tt_base64));
+//            nameValuePairs.add(new BasicNameValuePair("img_name", System.currentTimeMillis() + ".jpg"));
+            nameValuePairs.add(new BasicNameValuePair("img_name", tt_img_name));
+            nameValuePairs.add(new BasicNameValuePair("qr_code", tt_qr_code));
+            nameValuePairs.add(new BasicNameValuePair("session_app", tt_session_app));
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(pushdatae);
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                HttpResponse response = httpclient.execute(httppost);
+                String st = EntityUtils.toString(response.getEntity());
+                Log.v("log_tag", "In the try Loop" + st);
+
+            } catch (Exception e) {
+                Log.v("log_tag", "Lỗi kết nối : " + e.toString());
+            }
+            return null;
+
+        }
+
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            this.progressDialog.hide();
+            this.progressDialog.dismiss();
+        }
+    }
+
+
+    /**
+     * Hàm xử lý lấy encode hình để gửi lên Server
+     */
+    private void uploadPictureToServer(String t_base64, String qr_code, String session_app, String img_name) {
+//        Log.e("path", "----------------" + picturePath);
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        selectedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, bao);
+        byte[] ba = bao.toByteArray();
+        t_base64 = Base64.encodeToString(ba, Base64.DEFAULT);
+
+        Log.e("base64", "-----" + t_base64);
+
+// Upload hình  lên serverString
+        UploadToServerTask uploadToServer=new UploadToServerTask(this,t_base64, qr_code, session_app, img_name);
+        uploadToServer.execute();
     }
 
 
