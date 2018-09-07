@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity{
     String gettimeserver = "http://greenspeed.vn/qrcode/api/servertime.php";
     String getdateserver = "http://greenspeed.vn/qrcode/api/serverdate.php";
     String pushdatae = "http://greenspeed.vn/qrcode/api/input_data.php";
+    String pushupdate = "http://greenspeed.vn/qrcode/api/update_data.php";
     String folder_cam = "";
     File filecam;
     Uri imageUri;
@@ -406,6 +407,32 @@ public class MainActivity extends AppCompatActivity{
                                 showImage(t_image);
                                 DB.updatedata(tb_data,"out_true='"+t_time+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"active=0, session_app=null","session_app='"+t_session_app+"' AND code='"+t_qrcode+"'");
+
+                                RequestQueue t_request_update = Volley.newRequestQueue(this);
+                                StringRequest t_srequest_update = new StringRequest(Request.Method.GET, pushupdate,
+                                        new Response.Listener<String>() {
+                                            @Override
+                                            public void onResponse(String response) {
+                                                // Display the first 500 characters of the response string.
+                                                Log.e(TAG, "Successfully signed in : " + response.toString());
+                                            }
+                                        }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        Log.e(TAG, "Error at sign in : " + error.getMessage());
+                                    }
+                                }) {
+                                    @Override
+                                    public HashMap<String, String> getParams() {
+                                        HashMap<String, String> params = new HashMap<String, String>();
+                                        params.put("session_app", username);
+                                        params.put("passwd", password);
+                                        params.put("m", "student");
+                                        params.put("uc", "signin");
+                                        params.put("signin", "Sign+In");
+                                        return params;
+                                    }
+                                };
                             }
 
                         }
