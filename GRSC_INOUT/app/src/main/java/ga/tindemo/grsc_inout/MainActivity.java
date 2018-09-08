@@ -226,6 +226,16 @@ public class MainActivity extends AppCompatActivity{
             DB.insterdata(tb_qrcode,"'grsc_0018','Thẻ số 18', 0, null");
             DB.insterdata(tb_qrcode,"'grsc_0019','Thẻ số 19', 0, null");
             DB.insterdata(tb_qrcode,"'grsc_0020','Thẻ số 20', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0021','Thẻ số 21', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0022','Thẻ số 22', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0023','Thẻ số 23', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0024','Thẻ số 24', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0025','Thẻ số 25', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0026','Thẻ số 26', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0027','Thẻ số 27', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0028','Thẻ số 28', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0029','Thẻ số 29', 0, null");
+            DB.insterdata(tb_qrcode,"'grsc_0030','Thẻ số 30', 0, null");
         }
         c_qrcode.close();
 
@@ -234,12 +244,14 @@ public class MainActivity extends AppCompatActivity{
         DB.add_col(tb_data,"qr_code","text");
         DB.add_col(tb_data,"path_img","text");
         DB.add_col(tb_data,"out_true","text");
+
+        DB.close();
     }
 
     public void QR_Scan() {
 
 //        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
-        intentIntegrator.setPrompt(" t");
+        intentIntegrator.setPrompt(" ");
         intentIntegrator.setCameraId(0);  // Use a specific camera of the device
 //        intentIntegrator.setBeepEnabled(true);
         intentIntegrator.setBarcodeImageEnabled(false);
@@ -275,7 +287,7 @@ public class MainActivity extends AppCompatActivity{
 
                 int count_qrcode = c_qrcode.getCount();
                 if(count_qrcode==0){
-                    Toast.makeText(this, "Hệ thống không chấp nhận mã QR này", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Thẻ không hợp lệ", Toast.LENGTH_LONG).show(); //Quét QR code không thuộc hệ thống
                 }
                 else{
 //                    Toast.makeText(this, "Mode="+t_mode+": "+t_qrcode, Toast.LENGTH_LONG).show();
@@ -407,9 +419,11 @@ public class MainActivity extends AppCompatActivity{
                                 showImage(t_image);
                                 DB.updatedata(tb_data,"out_true='"+t_time+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"active=0, session_app=null","session_app='"+t_session_app+"' AND code='"+t_qrcode+"'");
+                                Log.d(TAG, "MYLOG : " + "test volley");
 
                                 RequestQueue t_request_update = Volley.newRequestQueue(this);
-                                StringRequest t_srequest_update = new StringRequest(Request.Method.GET, pushupdate,
+                                final String finalT_session_app = t_session_app;
+                                StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate,
                                         new Response.Listener<String>() {
                                             @Override
                                             public void onResponse(String response) {
@@ -425,22 +439,20 @@ public class MainActivity extends AppCompatActivity{
                                     @Override
                                     public HashMap<String, String> getParams() {
                                         HashMap<String, String> params = new HashMap<String, String>();
-                                        params.put("session_app", username);
-                                        params.put("passwd", password);
-                                        params.put("m", "student");
-                                        params.put("uc", "signin");
-                                        params.put("signin", "Sign+In");
+                                        params.put("session_app", finalT_session_app);
+                                        params.put("qrcode", t_qrcode);
                                         return params;
                                     }
                                 };
+                                t_request_update.add(t_srequest_update);
                             }
-
                         }
                     }
 
 
                 }
                 c_qrcode.close();
+                DB.close();
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -454,6 +466,7 @@ public class MainActivity extends AppCompatActivity{
             DB.insterdata(tb_data,"'"+t_time+"','"+t_qrcode+"','"+filecam+"','"+0+"'");
             selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
             uploadPictureToServer(pushdatae,t_qrcode,t_time,filename);
+            DB.close();
         }
         else{
             Toast.makeText(this, "Lưu hình ảnh thất bại", Toast.LENGTH_SHORT).show();
@@ -765,7 +778,7 @@ public class MainActivity extends AppCompatActivity{
         protected void onPreExecute() {
             super.onPreExecute();
             this.progressDialog.setMessage("Vui lòng chờ hệ thống đang upload hình!");
-            this.progressDialog.show();
+//            this.progressDialog.show();
         }
 
         @Override
