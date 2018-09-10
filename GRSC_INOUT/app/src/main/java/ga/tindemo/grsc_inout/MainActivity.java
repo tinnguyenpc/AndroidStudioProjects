@@ -461,7 +461,7 @@ public class MainActivity extends AppCompatActivity{
         if(filecam.exists()){
             Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
             DB.updatedata(tb_qrcode,"active=1"+",session_app='"+t_time+"'","code='"+t_qrcode+"'");
-            DB.insterdata(tb_data,"'"+t_time+"','"+t_qrcode+"','"+filecam+"','"+0+"'");
+            DB.insterdata(tb_data,"'"+t_time+"','"+t_qrcode+"','"+filename+"','"+0+"'");
             selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
             uploadPictureToServer(pushdatae,t_qrcode,t_time,filename);
             DB.close();
