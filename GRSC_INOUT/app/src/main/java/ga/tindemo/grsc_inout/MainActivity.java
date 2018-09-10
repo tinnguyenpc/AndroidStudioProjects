@@ -27,10 +27,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
-import android.util.Size;
 import android.util.TypedValue;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -38,7 +36,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,7 +46,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.zxing.Result;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
@@ -67,7 +63,12 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity{
     String pushupdate = "http://greenspeed.vn/qrcode/api/update_data.php";
     String getqrcode = "http://greenspeed.vn/qrcode/api/get_qrcode.php";
 
-    String folder_cam = "";
+    String folder_cam = Environment.getExternalStorageDirectory()+"/GRSC_INOUT";
     File filecam;
     Uri imageUri;
     String t_date="";
@@ -127,7 +128,6 @@ public class MainActivity extends AppCompatActivity{
         bt_in = findViewById(R.id.bt_in);
         bt_out = findViewById(R.id.bt_out);
 
-        folder_cam = Environment.getExternalStorageDirectory()+"/GRSC_INOUT";
         filecam = new File(folder_cam,filename);
         if(checkAndRequestPermissions()) {
             // carry on the normal flow, as the case of  permissions  granted.
@@ -170,7 +170,6 @@ public class MainActivity extends AppCompatActivity{
                 } else {
                     Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
                 }
-
             }
         });
 
@@ -186,35 +185,6 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-
-
-
-//        Calendar c = Calendar.getInstance();
-//        System.out.println("Current time => " + c.getTime());
-//        c.set(2013, (12 - 1), 05);
-//        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmssS");
-//        String formattedDate = df.format(c.getTime());
-//        Toast.makeText(this, formattedDate, Toast.LENGTH_SHORT).show();
-
-
-
-
-//        // formattedDate have current date/time
-//        Toast.makeText(this, formattedDate, Toast.LENGTH_SHORT).show();
-
-//        long time= System.currentTimeMillis();
-
-        // Now we display formattedDate value in TextView
-//        TextView txtView = new TextView(this);
-//        txtView.setText("Current Date and Time : "+formattedDate);
-//        txtView.setGravity(Gravity.CENTER);
-//        txtView.setTextSize(20);
-//        setContentView(txtView);
-
-
-
-
-
     }
         void initDataBase() {
         DB = new Database(this);
@@ -229,44 +199,11 @@ public class MainActivity extends AppCompatActivity{
         if(count_qrcode!=0){
             DB.delete_DB(tb_qrcode,null);
         }
-//        if(count_qrcode==0){
-//            DB.insterdata(tb_qrcode,"'grsc_0001','Thẻ số 1', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0002','Thẻ số 2', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0003','Thẻ số 3', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0004','Thẻ số 4', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0005','Thẻ số 5', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0006','Thẻ số 6', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0007','Thẻ số 7', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0008','Thẻ số 8', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0009','Thẻ số 9', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0010','Thẻ số 10', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0011','Thẻ số 11', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0012','Thẻ số 12', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0013','Thẻ số 13', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0014','Thẻ số 14', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0015','Thẻ số 15', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0016','Thẻ số 16', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0017','Thẻ số 17', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0018','Thẻ số 18', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0019','Thẻ số 19', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0020','Thẻ số 20', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0021','Thẻ số 21', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0022','Thẻ số 22', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0023','Thẻ số 23', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0024','Thẻ số 24', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0025','Thẻ số 25', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0026','Thẻ số 26', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0027','Thẻ số 27', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0028','Thẻ số 28', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0029','Thẻ số 29', 0, null");
-//            DB.insterdata(tb_qrcode,"'grsc_0030','Thẻ số 30', 0, null");
-//        }
-//        c_qrcode.close();
 
         DB.create_table(tb_data);
         DB.add_col(tb_data,"session_app","text");
         DB.add_col(tb_data,"qr_code","text");
-        DB.add_col(tb_data,"path_img","text");
+        DB.add_col(tb_data,"img_file","text");
         DB.add_col(tb_data,"out_true","text");
 
         DB.close();
@@ -395,10 +332,8 @@ public class MainActivity extends AppCompatActivity{
                                 SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
                                 t_date = df2.format(c.getTime());
                             }
-                            filename = t_qrcode+"_"+t_time+".jpg";
+                            filename = t_date+"/"+t_qrcode+"_"+t_time+".jpg";
 
-                            folder_cam = Environment.getExternalStorageDirectory()+"/GRSC_INOUT";
-                            folder_cam = folder_cam+"/"+t_date;
                             if (!dir_exists(folder_cam)){
                                 File directory = new File(folder_cam);
                                 directory.mkdirs();
@@ -434,14 +369,14 @@ public class MainActivity extends AppCompatActivity{
                             } else {
                                 builder = new AlertDialog.Builder(this);
                             }
-                            builder.setTitle("Thẻ chưa đăng ký")
-                                    .setMessage("Thẻ này chưa được đăng ký, Vui lòng chọn thẻ khác hoặc thực hiện đăng ký Vào cổng cho thẻ này!")
+                            builder.setTitle("Thẻ chưa sử dụng! ")
+                                    .setMessage("Thẻ này chưa được check in, Vui lòng chọn thẻ khác hoặc thực hiện check in cho thẻ này!")
                                     .setPositiveButton("Chọn thẻ khác", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             // continue with delete
                                         }
                                     })
-                                    .setNegativeButton("Chuyển sang đăng ký vào cổng", new DialogInterface.OnClickListener() {
+                                    .setNegativeButton("Chuyển sang Check in", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             t_mode = 0;
                                             QR_Scan();
@@ -620,7 +555,11 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void showImage(String t_name, String t_path) {
-        imageUri = Uri.parse(t_path);
+//        t_path = "http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg";
+//        imageUri = Uri.parse(t_path);
+
+        imageUri = Uri.parse(URLtoURI("http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg").toString());
+
 //        Toast.makeText(this, t_path, Toast.LENGTH_LONG).show();
 //        Toast.makeText(this, imageUri.toString(), Toast.LENGTH_LONG).show();
         Dialog builder = new Dialog(this);
@@ -635,7 +574,13 @@ public class MainActivity extends AppCompatActivity{
         });
 
         ImageView imageView = new ImageView(this);
-        imageView.setImageURI(imageUri);
+
+//        if(!Uri.EMPTY.equals(imageUri)){
+            imageView.setImageURI(imageUri);
+//        } else {
+//            imageView.setImageBitmap(BitmapFactory.decodeFile("http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg"));
+//        }
+
         TextView txt_nameqr = new TextView(this);
         txt_nameqr.setText(t_name);
         txt_nameqr.setGravity(View.TEXT_ALIGNMENT_CENTER);
@@ -916,5 +861,66 @@ public class MainActivity extends AppCompatActivity{
         uploadToServer.execute();
     }
 
+    public URI URLtoURI(String t_url) {
+        URI uri = null;
+        URL url = null;
+
+        // Create a URL
+        try {
+            url = new URL(t_url);
+            System.out.println("URL created: " + url);
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Malformed URL: " + e.getMessage());
+        }
+
+        // Convert a URL to a URI
+        try {
+            uri = url.toURI();
+            System.out.println("URI from URL: " + uri);
+        }
+        catch (URISyntaxException e) {
+            System.out.println("URI Syntax Error: " + e.getMessage());
+        }
+        return uri;
+
+    }
+
+    public URL URItoURL(String t_uri) {
+        URI uri = null;
+        URL url = null;
+
+        // Create a URI
+        try {
+            uri = new URI(t_uri);
+            System.out.println("URI created: " + uri);
+        }
+        catch (URISyntaxException e) {
+            System.out.println("URI Syntax Error: " + e.getMessage());
+        }
+
+        // Convert URI to URL
+        try {
+            url = uri.toURL();
+            System.out.println("URL from URI: " + url);
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Malformed URL: " + e.getMessage());
+        }
+        return url;
+    }
+
+    public Bitmap URLtoBitmap (String... urls) {
+        String urldisplay = urls[0];
+        Bitmap mIcon11 = null;
+        try {
+            InputStream in = new java.net.URL(urldisplay).openStream();
+            mIcon11 = BitmapFactory.decodeStream(in);
+        } catch (Exception e) {
+            Log.e("Error", e.getMessage());
+            e.printStackTrace();
+        }
+        return mIcon11;
+    }
 
 }

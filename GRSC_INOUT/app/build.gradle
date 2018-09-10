@@ -28,8 +28,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     // thư viện qr
     implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
-    // thư viện ảnh qr
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+
     // thư viện volley
     implementation 'com.android.volley:volley:1.0.0'
     implementation('org.apache.httpcomponents:httpmime:4.3.6') {
@@ -39,4 +38,6 @@ dependencies {
     // JSON Parsing
     implementation 'com.google.code.gson:gson:2.8.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
+    // Picasso load image url
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }
