@@ -27,14 +27,20 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
+import android.util.Size;
+import android.util.TypedValue;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -55,6 +61,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -71,6 +80,8 @@ public class MainActivity extends AppCompatActivity{
     String getdateserver = "http://greenspeed.vn/qrcode/api/serverdate.php";
     String pushdatae = "http://greenspeed.vn/qrcode/api/input_data.php";
     String pushupdate = "http://greenspeed.vn/qrcode/api/update_data.php";
+    String getqrcode = "http://greenspeed.vn/qrcode/api/get_qrcode.php";
+
     String folder_cam = "";
     File filecam;
     Uri imageUri;
@@ -147,12 +158,19 @@ public class MainActivity extends AppCompatActivity{
         }
 
 
+        initDataBase();
+        getqrcode();
 
         bt_in.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 t_mode=0;
-                QR_Scan();
+                if(numrow_table(tb_qrcode,null)>10){
+                    QR_Scan();
+                } else {
+                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
+                }
+
             }
         });
 
@@ -160,7 +178,11 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 t_mode=1;
-                QR_Scan();
+                if(numrow_table(tb_qrcode,null)>10){
+                    QR_Scan();
+                } else {
+                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -189,7 +211,6 @@ public class MainActivity extends AppCompatActivity{
 //        txtView.setTextSize(20);
 //        setContentView(txtView);
 
-        initDataBase();
 
 
 
@@ -205,39 +226,42 @@ public class MainActivity extends AppCompatActivity{
 
         Cursor c_qrcode = DB.loaddata(tb_qrcode,null,null);
         int count_qrcode = c_qrcode.getCount();
-        if(count_qrcode==0){
-            DB.insterdata(tb_qrcode,"'grsc_0001','Thẻ số 1', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0002','Thẻ số 2', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0003','Thẻ số 3', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0004','Thẻ số 4', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0005','Thẻ số 5', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0006','Thẻ số 6', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0007','Thẻ số 7', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0008','Thẻ số 8', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0009','Thẻ số 9', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0010','Thẻ số 10', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0011','Thẻ số 11', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0012','Thẻ số 12', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0013','Thẻ số 13', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0014','Thẻ số 14', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0015','Thẻ số 15', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0016','Thẻ số 16', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0017','Thẻ số 17', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0018','Thẻ số 18', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0019','Thẻ số 19', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0020','Thẻ số 20', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0021','Thẻ số 21', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0022','Thẻ số 22', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0023','Thẻ số 23', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0024','Thẻ số 24', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0025','Thẻ số 25', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0026','Thẻ số 26', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0027','Thẻ số 27', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0028','Thẻ số 28', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0029','Thẻ số 29', 0, null");
-            DB.insterdata(tb_qrcode,"'grsc_0030','Thẻ số 30', 0, null");
+        if(count_qrcode!=0){
+            DB.delete_DB(tb_qrcode,null);
         }
-        c_qrcode.close();
+//        if(count_qrcode==0){
+//            DB.insterdata(tb_qrcode,"'grsc_0001','Thẻ số 1', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0002','Thẻ số 2', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0003','Thẻ số 3', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0004','Thẻ số 4', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0005','Thẻ số 5', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0006','Thẻ số 6', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0007','Thẻ số 7', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0008','Thẻ số 8', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0009','Thẻ số 9', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0010','Thẻ số 10', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0011','Thẻ số 11', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0012','Thẻ số 12', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0013','Thẻ số 13', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0014','Thẻ số 14', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0015','Thẻ số 15', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0016','Thẻ số 16', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0017','Thẻ số 17', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0018','Thẻ số 18', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0019','Thẻ số 19', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0020','Thẻ số 20', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0021','Thẻ số 21', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0022','Thẻ số 22', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0023','Thẻ số 23', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0024','Thẻ số 24', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0025','Thẻ số 25', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0026','Thẻ số 26', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0027','Thẻ số 27', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0028','Thẻ số 28', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0029','Thẻ số 29', 0, null");
+//            DB.insterdata(tb_qrcode,"'grsc_0030','Thẻ số 30', 0, null");
+//        }
+//        c_qrcode.close();
 
         DB.create_table(tb_data);
         DB.add_col(tb_data,"session_app","text");
@@ -247,6 +271,50 @@ public class MainActivity extends AppCompatActivity{
 
         DB.close();
     }
+
+    public void getqrcode() {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, getqrcode,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+//                        Cursor c_qrcode = DB.loaddata(tb_qrcode,null,null);
+                        if (response.equals("{\"AREA\":null}")) {
+                            Toast.makeText(MainActivity.this, "Kiểm tra lại kết nối Internet", Toast.LENGTH_SHORT).show();
+                        } else
+
+                            try {
+
+                                //1. Khai báo đối tượng json root object
+                                JSONObject jsonRootObject = new JSONObject(response);
+                                //2. Đưa jsonRootObject vào array object
+                                JSONArray jsonArray = jsonRootObject.optJSONArray("GRSC_QR");
+                                //3. Duyệt từng đối tượng trong Array và lấy giá trị ra
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                                    String idqr = jsonObject.optString("id");
+                                    String codeqr = jsonObject.optString("code");
+                                    String nameqr = jsonObject.optString("name");
+                                    String activeqr = jsonObject.optString("active");
+                                    DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+activeqr+"', null");
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ, kiểm tra lại kết nối internet", Toast.LENGTH_SHORT).show();
+                        Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
+                    }
+                }
+        );
+
+        requestQueue.add(stringRequest);
+    }
+
 
     public void QR_Scan() {
 
@@ -259,19 +327,6 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    public void handleResult(Result rawResult) {
-        // Do something with the result here</p>
-//        Log.e(&quot;handler&quot;, rawResult.getText()); // Prints scan results
-//        Log.e(&quot;handler&quot;, rawResult.getBarcodeFormat().toString()); // Prints the scan format (qrcode)
-        // show the scanner result into dialog box.<br />
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//                builder.setTitle(&quot;Scan Result&quot;);
-                builder.setMessage(rawResult.getText());
-                AlertDialog alert1 = builder.create();
-                alert1.show();
-       // If you would like to resume scanning, call this method below:
-        // mScannerView.resumeCameraPreview(this);
-    }
 
     // Get the results QR:
     @Override
@@ -283,11 +338,11 @@ public class MainActivity extends AppCompatActivity{
             } else {
                 t_qrcode =resultQR.getContents();
                 Cursor c_qrcode = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
-                Toast.makeText(this, resultQR.getContents(), Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, resultQR.getContents(), Toast.LENGTH_LONG).show();
 
                 int count_qrcode = c_qrcode.getCount();
                 if(count_qrcode==0){
-                    Toast.makeText(this, "Thẻ không hợp lệ", Toast.LENGTH_LONG).show(); //Quét QR code không thuộc hệ thống
+                    Toast.makeText(this, "Không có thẻ này!", Toast.LENGTH_LONG).show(); //Quét QR code không thuộc hệ thống
                 }
                 else{
 //                    Toast.makeText(this, "Mode="+t_mode+": "+t_qrcode, Toast.LENGTH_LONG).show();
@@ -315,14 +370,14 @@ public class MainActivity extends AppCompatActivity{
                             } else {
                                 builder = new AlertDialog.Builder(this);
                             }
-                            builder.setTitle("Thẻ đã đăng ký")
-                                    .setMessage("Thẻ này đang đăng ký, Vui lòng chọn thẻ khác hoặc thực hiện kiểm tra Ra cổng để hoàn tất việc trả thẻ này để tiếp tục sử dụng!")
+                            builder.setTitle("Thẻ đang sử dụng!")
+                                    .setMessage("Vui lòng chọn thẻ khác hoặc thực hiện kiểm tra Check out!")
                                     .setPositiveButton("Chọn thẻ khác", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             // continue with delete
                                         }
                                     })
-                                    .setNegativeButton("Chuyển sang quét Ra cổng", new DialogInterface.OnClickListener() {
+                                    .setNegativeButton("Chuyển sang Check out", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             t_mode = 1;
                                             QR_Scan();
@@ -364,6 +419,7 @@ public class MainActivity extends AppCompatActivity{
                         Integer t_active=0;
                         String t_session_app="";
                         String t_image = "";
+                        String t_name = "";
                         if (c_qrcode.moveToFirst()) {
                             while (!c_qrcode.isAfterLast()) {
                                 t_active = Integer.parseInt(c_qrcode.getString(c_qrcode.getColumnIndex("active")));
@@ -405,6 +461,7 @@ public class MainActivity extends AppCompatActivity{
                             }
 
                             Cursor c_data = DB.loaddata(tb_data,null,"session_app='"+t_session_app+"'");
+                            Cursor c_qr = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
                             int count_data = c_data.getCount();
                             if(count_data==0){
                                 Toast.makeText(this, "Lỗi không xác định", Toast.LENGTH_LONG).show();
@@ -416,7 +473,13 @@ public class MainActivity extends AppCompatActivity{
                                         c_data.moveToNext();
                                     }
                                 }
-                                showImage(t_image);
+                                if (c_qr.moveToFirst()) {
+                                    while (!c_qr.isAfterLast()) {
+                                        t_name = c_qr.getString(2);
+                                        c_qr.moveToNext();
+                                    }
+                                }
+                                showImage(t_name,t_image);
                                 DB.updatedata(tb_data,"out_true='"+t_time+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"active=0, session_app=null","session_app='"+t_session_app+"' AND code='"+t_qrcode+"'");
                                 Log.d(TAG, "MYLOG : " + "test volley");
@@ -556,7 +619,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    public void showImage(String t_path) {
+    public void showImage(String t_name, String t_path) {
         imageUri = Uri.parse(t_path);
 //        Toast.makeText(this, t_path, Toast.LENGTH_LONG).show();
 //        Toast.makeText(this, imageUri.toString(), Toast.LENGTH_LONG).show();
@@ -573,20 +636,35 @@ public class MainActivity extends AppCompatActivity{
 
         ImageView imageView = new ImageView(this);
         imageView.setImageURI(imageUri);
-        builder.addContentView(imageView, new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        TextView txt_nameqr = new TextView(this);
+        txt_nameqr.setText(t_name);
+        txt_nameqr.setGravity(View.TEXT_ALIGNMENT_CENTER);
+        txt_nameqr.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
+        FrameLayout framelayout = new FrameLayout(this);
+        framelayout.setLayoutParams(new ViewGroup.LayoutParams
+                (ViewGroup.LayoutParams.MATCH_PARENT,  ViewGroup.LayoutParams.MATCH_PARENT));
 
-//        ImageView imageView = new ImageView(this);
-//        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-//                FrameLayout.LayoutParams.MATCH_PARENT,
-//                FrameLayout.LayoutParams.MATCH_PARENT);
-//
-//        params.height = getDeviceHeight(this);
-//        params.width = getDeviceWidth(this);
-//        FrameLayout framelayout = new FrameLayout(this);
+        framelayout.addView(imageView);
+        framelayout.addView(txt_nameqr);
 
-//        framelayout.addView(imageView, 0, params);
+
+        final RelativeLayout.LayoutParams param0 = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        final RelativeLayout.LayoutParams param1 = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+
+        );
+
+
+
+        builder.addContentView(framelayout, param0);
+
+
+
+
         builder.show();
     }
 
@@ -633,6 +711,14 @@ public class MainActivity extends AppCompatActivity{
         return ret;
     }
 
+    public int numrow_table(String table_name, String t_cond)
+    {
+        int result = 0;
+        Cursor c_qrcode = DB.loaddata(table_name,null,t_cond);
+        result = c_qrcode.getCount();
+        c_qrcode.close();
+        return result;
+    }
 
 
 
