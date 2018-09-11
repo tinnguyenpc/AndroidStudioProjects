@@ -35,8 +35,6 @@ public class MainActivity extends AppCompatActivity {
         marque.startAnimation(marquee);
 
         String imageUrl = "http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg";
-//        Uri imageUri = Uri.parse(imageUrl);
-//        imageView.setImageURI(imageUri);
         Picasso.get().load(imageUrl).into(imageView);
 
 

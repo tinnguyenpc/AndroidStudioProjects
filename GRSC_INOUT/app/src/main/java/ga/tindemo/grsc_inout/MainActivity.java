@@ -48,6 +48,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.squareup.picasso.Picasso;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -191,8 +192,7 @@ public class MainActivity extends AppCompatActivity{
         DB.create_table(tb_qrcode);
         DB.add_col(tb_qrcode,"code","text");
         DB.add_col(tb_qrcode,"name","text");
-        DB.add_col(tb_qrcode,"active","integer  DEFAULT 0");
-        DB.add_col(tb_qrcode,"session_app","text  DEFAULT NULL");
+        DB.add_col(tb_qrcode,"session_qr","text  DEFAULT NULL");
 
         Cursor c_qrcode = DB.loaddata(tb_qrcode,null,null);
         int count_qrcode = c_qrcode.getCount();
@@ -232,8 +232,8 @@ public class MainActivity extends AppCompatActivity{
 //                                    String idqr = jsonObject.optString("id");
                                     String codeqr = jsonObject.optString("code");
                                     String nameqr = jsonObject.optString("name");
-                                    String activeqr = jsonObject.optString("active");
-                                    DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+activeqr+"', null");
+                                    String activeqr = jsonObject.optString("session_qr");
+                                    DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+activeqr+"'");
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -290,13 +290,18 @@ public class MainActivity extends AppCompatActivity{
                             c_qrcode.moveToNext();
                         }
                     }
-                    Toast.makeText(this, name_card, Toast.LENGTH_LONG).show();
+//                    Toast.makeText(this, name_card, Toast.LENGTH_LONG).show();
 
                     if(t_mode==0){
                         Integer t_active=0;
                         if (c_qrcode.moveToFirst()) {
                             while (!c_qrcode.isAfterLast()) {
-                                t_active = Integer.parseInt(c_qrcode.getString(c_qrcode.getColumnIndex("active")));
+                                String t_session_qr = c_qrcode.getString(c_qrcode.getColumnIndex("session_qr"));
+                                if(!t_session_qr.equals("null")){
+                                    t_active = 1;
+                                    Toast.makeText(this, "__"+t_session_qr+ "__khác null" , Toast.LENGTH_LONG).show();
+
+                                }
                                 c_qrcode.moveToNext();
                             }
                         }
@@ -353,12 +358,15 @@ public class MainActivity extends AppCompatActivity{
                     else {
                         Integer t_active=0;
                         String t_session_app="";
+                        String t_session_qr = "";
                         String t_image = "";
                         String t_name = "";
                         if (c_qrcode.moveToFirst()) {
                             while (!c_qrcode.isAfterLast()) {
-                                t_active = Integer.parseInt(c_qrcode.getString(c_qrcode.getColumnIndex("active")));
-                                t_session_app = c_qrcode.getString(c_qrcode.getColumnIndex("session_app"));
+                                t_session_qr = c_qrcode.getString(c_qrcode.getColumnIndex("session_qr"));
+                                if(!t_session_qr.trim().equals("null")){
+                                    t_active = 1;
+                                }
                                 c_qrcode.moveToNext();
                             }
                         }
@@ -370,7 +378,7 @@ public class MainActivity extends AppCompatActivity{
                                 builder = new AlertDialog.Builder(this);
                             }
                             builder.setTitle("Thẻ chưa sử dụng! ")
-                                    .setMessage("Thẻ này chưa được check in, Vui lòng chọn thẻ khác hoặc thực hiện check in cho thẻ này!")
+                                    .setMessage("Thẻ này chưa được check in, Vui lòng chọn thẻ khác hoặc thực hiện Check in!")
                                     .setPositiveButton("Chọn thẻ khác", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             // continue with delete
@@ -395,11 +403,11 @@ public class MainActivity extends AppCompatActivity{
                                 t_date = df2.format(c.getTime());
                             }
 
-                            Cursor c_data = DB.loaddata(tb_data,null,"session_app='"+t_session_app+"'");
+                            Cursor c_data = DB.loaddata(tb_data,null,"session_app='"+t_session_qr+"'");
                             Cursor c_qr = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
                             int count_data = c_data.getCount();
                             if(count_data==0){
-                                Toast.makeText(this, "Lỗi không xác định", Toast.LENGTH_LONG).show();
+                                Toast.makeText(this, "Lỗi dữ liệu hệ thống", Toast.LENGTH_LONG).show();
                             }
                             else {
                                 if (c_data.moveToFirst()) {
@@ -416,7 +424,7 @@ public class MainActivity extends AppCompatActivity{
                                 }
                                 showImage(t_name,t_image);
                                 DB.updatedata(tb_data,"out_true='"+t_time+"'","session_app='"+t_session_app+"'");
-                                DB.updatedata(tb_qrcode,"active=0, session_app=null","session_app='"+t_session_app+"' AND code='"+t_qrcode+"'");
+                                DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
                                 Log.d(TAG, "MYLOG : " + "test volley");
 
                                 RequestQueue t_request_update = Volley.newRequestQueue(this);
@@ -460,7 +468,7 @@ public class MainActivity extends AppCompatActivity{
 //        Toast.makeText(this, filecam.toString(), Toast.LENGTH_SHORT).show();
         if(filecam.exists()){
             Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
-            DB.updatedata(tb_qrcode,"active=1"+",session_app='"+t_time+"'","code='"+t_qrcode+"'");
+            DB.updatedata(tb_qrcode,"session_qr='"+t_time+"'","code='"+t_qrcode+"'");
             DB.insterdata(tb_data,"'"+t_time+"','"+t_qrcode+"','"+filename+"','"+0+"'");
             selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
             uploadPictureToServer(pushdatae,t_qrcode,t_time,filename);
@@ -476,9 +484,9 @@ public class MainActivity extends AppCompatActivity{
             }
 
             if(t_qrcode!=""){
-                builder.setTitle("Huỷ đăng ký thẻ")
-                        .setMessage("Quá trình đăng ký vào thẻ đã bị bỏ qua, thẻ vừa quét vẫn đang trống dữ liệu.")
-                        .setPositiveButton("Tôi biết rồi", new DialogInterface.OnClickListener() {
+                builder.setTitle("Check in")
+                        .setMessage("Quá trình Check in chưa hoàn tất, thẻ vừa quét vẫn chưa được lưu")
+                        .setPositiveButton("Huỷ Check in", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // continue with delete
                             }
@@ -555,10 +563,8 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void showImage(String t_name, String t_path) {
-//        t_path = "http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg";
-//        imageUri = Uri.parse(t_path);
-
-        imageUri = Uri.parse(URLtoURI("http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg").toString());
+        t_path = "http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg";
+        imageUri = Uri.parse(t_path);
 
 //        Toast.makeText(this, t_path, Toast.LENGTH_LONG).show();
 //        Toast.makeText(this, imageUri.toString(), Toast.LENGTH_LONG).show();
@@ -575,11 +581,11 @@ public class MainActivity extends AppCompatActivity{
 
         ImageView imageView = new ImageView(this);
 
-//        if(!Uri.EMPTY.equals(imageUri)){
+        if(!Uri.EMPTY.equals(imageUri)){
             imageView.setImageURI(imageUri);
-//        } else {
-//            imageView.setImageBitmap(BitmapFactory.decodeFile("http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg"));
-//        }
+        } else {
+            Picasso.get().load(t_path).into(imageView);;
+        }
 
         TextView txt_nameqr = new TextView(this);
         txt_nameqr.setText(t_name);
