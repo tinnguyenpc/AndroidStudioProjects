@@ -409,7 +409,7 @@ public class MainActivity extends AppCompatActivity{
                             int count_data = c_data.getCount();
                             if(count_data==0){
 //                                Toast.makeText(this, "Lỗi dữ liệu hệ thống", Toast.LENGTH_LONG).show();
-                                t_image="grsc_0002 2018-09-11 2023:32:31.jpg";
+                                t_image="grsc_0002 2018-09-11 23:32:31.jpg";
                                 showImage(t_name,t_image);
                             }
                             else {
@@ -595,6 +595,7 @@ public class MainActivity extends AppCompatActivity{
         }else {
             t_path = "http://greenspeed.vn/qrcode/api/upload/"+separated[1]+"/"+t_image;
             Toast.makeText(this, t_path, Toast.LENGTH_SHORT).show();
+            Log.d("TTT0008", t_path);
             Picasso.get().load(t_path).into(imageView);
         }
 
