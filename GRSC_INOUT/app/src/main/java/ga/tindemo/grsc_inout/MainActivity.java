@@ -299,7 +299,7 @@ public class MainActivity extends AppCompatActivity{
                                 String t_session_qr = c_qrcode.getString(c_qrcode.getColumnIndex("session_qr"));
                                 if(!t_session_qr.equals("null")){
                                     t_active = 1;
-                                    Toast.makeText(this, "__"+t_session_qr+ "__khác null" , Toast.LENGTH_LONG).show();
+//                                    Toast.makeText(this, "__"+t_session_qr+ "__khác null" , Toast.LENGTH_LONG).show();
 
                                 }
                                 c_qrcode.moveToNext();
@@ -337,19 +337,20 @@ public class MainActivity extends AppCompatActivity{
                                 SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
                                 t_date = df2.format(c.getTime());
                             }
-                            filename = t_date+"/"+t_qrcode+"_"+t_time+".jpg";
+                            filename = t_qrcode+" "+t_time+".jpg";
+                            String t_folder_cam = folder_cam+"/"+t_date;
 
                             if (!dir_exists(folder_cam)){
                                 File directory = new File(folder_cam);
                                 directory.mkdirs();
                             }
 
-                            if (dir_exists(folder_cam)){
+                            if (dir_exists(t_folder_cam)){
                                 // 'Dir exists'
                             }else{
 // Display Errormessage 'Dir could not creat!!'
                             }
-                            filecam = new File(folder_cam,filename);
+                            filecam = new File(t_folder_cam,filename);
 //                Toast.makeText(this, filename+"   ----    "+filecam, Toast.LENGTH_LONG).show();
                             Log.d(TAG, filename+"   ----    "+filecam);
                             capturePicture();
@@ -407,7 +408,9 @@ public class MainActivity extends AppCompatActivity{
                             Cursor c_qr = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
                             int count_data = c_data.getCount();
                             if(count_data==0){
-                                Toast.makeText(this, "Lỗi dữ liệu hệ thống", Toast.LENGTH_LONG).show();
+//                                Toast.makeText(this, "Lỗi dữ liệu hệ thống", Toast.LENGTH_LONG).show();
+                                t_image="grsc_0029 2018-09-11 2017:25:36.jpg";
+                                showImage(t_name,t_image);
                             }
                             else {
                                 if (c_data.moveToFirst()) {
@@ -423,6 +426,7 @@ public class MainActivity extends AppCompatActivity{
                                     }
                                 }
                                 showImage(t_name,t_image);
+
                                 DB.updatedata(tb_data,"out_true='"+t_time+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
                                 Log.d(TAG, "MYLOG : " + "test volley");
@@ -562,11 +566,15 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    public void showImage(String t_name, String t_path) {
-        t_path = "http://greenspeed.vn/qrcode/api/upload/grsc_0001_2018-09-10%2010:47:48.jpg";
-        imageUri = Uri.parse(t_path);
-
-//        Toast.makeText(this, t_path, Toast.LENGTH_LONG).show();
+    public void showImage(String t_name, String t_image) {
+//        String tt_path = "http://greenspeed.vn/qrcode/api/upload/2018-09-11/grsc_0029 2018-09-11%2017:25:36.jpg";
+        String[] separated = new String[0];
+        String t_path ="";
+        if(!t_image.equals("")){
+           separated = t_image.split(" ");
+            t_path = folder_cam+"/"+separated[1]+"/"+t_image;
+        }
+//        Toast.makeText(this, t_name+"=="+t_path, Toast.LENGTH_LONG).show();
 //        Toast.makeText(this, imageUri.toString(), Toast.LENGTH_LONG).show();
         Dialog builder = new Dialog(this);
         builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -579,12 +587,22 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        ImageView imageView = new ImageView(this);
 
-        if(!Uri.EMPTY.equals(imageUri)){
+        ImageView imageView = new ImageView(this);
+        if ((new File(t_path)).exists()) {
+            imageUri = Uri.parse(t_path);
             imageView.setImageURI(imageUri);
-        } else {
-            Picasso.get().load(t_path).into(imageView);;
+        }else {
+            t_path = "http://greenspeed.vn/qrcode/api/upload/"+separated[1]+"/"+t_image;
+            URL myURL = null;
+            try {
+                myURL = new URL(t_path);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            Toast.makeText(this, t_path, Toast.LENGTH_SHORT).show();
+            Picasso.get().load(String.valueOf(myURL)).into(imageView);
+            Log.d("TTT0004", t_path);
         }
 
         TextView txt_nameqr = new TextView(this);
@@ -854,7 +872,9 @@ public class MainActivity extends AppCompatActivity{
      * Hàm xử lý lấy encode hình để gửi lên Server
      */
     private void uploadPictureToServer(String t_base64, String qr_code, String session_app, String img_name) {
-//        Log.e("path", "----------------" + picturePath);
+        String[] separated = session_app.split(" ");
+        String t_img_name= folder_cam+"/"+separated[0]+"/"+img_name;
+        Log.e("path", session_app+"|"+separated[0]+"..."+separated[1]+"----------------" + t_img_name);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         selectedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, bao);
         byte[] ba = bao.toByteArray();
