@@ -17,14 +17,17 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
 import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
@@ -36,6 +39,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,23 +87,27 @@ public class MainActivity extends AppCompatActivity{
     String pushdatae = "http://greenspeed.vn/qrcode/api/input_data.php";
     String pushupdate = "http://greenspeed.vn/qrcode/api/update_data.php";
     String getqrcode = "http://greenspeed.vn/qrcode/api/get_qrcode.php";
+    String login_device = "http://greenspeed.vn/qrcode/api/login_device.php";
+    String login_check = "http://greenspeed.vn/qrcode/api/login_check.php";
 
     String folder_cam = Environment.getExternalStorageDirectory()+"/GRSC_INOUT";
     File filecam;
     Uri imageUri;
     String t_date="";
     String t_time="";
+    String device_token ="";
+    boolean logged= false;
 
     Bitmap selectedBitmap;
 
 
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
     private static int SPLASH_TIME_OUT = 2000;
-    private String TAG = "tag";
     private Database DB;
 //    private Context m_app;
     private final String tb_qrcode="tb_qrcode";
     private final String tb_data= "tb_data";
+    private final String tb_device="tb_device";
     final IntentIntegrator intentIntegrator = new IntentIntegrator(this);
     public static IntentResult resultQR;
 
@@ -107,8 +115,13 @@ public class MainActivity extends AppCompatActivity{
     String filename = "";
     String t_qrcode = "";
 
+    ConstraintLayout layout_home;
+    LinearLayout layout_imgage;
     Button bt_in;
     Button bt_out;
+    ImageView img_checkout;
+    TextView txt_img;
+    Button bt_imgback;
 
 
     @Override
@@ -126,8 +139,14 @@ public class MainActivity extends AppCompatActivity{
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
 
+        layout_home = findViewById(R.id.layout_home);
+        layout_imgage = findViewById(R.id.layout_image);
+
         bt_in = findViewById(R.id.bt_in);
         bt_out = findViewById(R.id.bt_out);
+        img_checkout = findViewById(R.id.img_out);
+        txt_img = findViewById(R.id.txt_image);
+        bt_imgback = findViewById(R.id.bt_imgback);
 
         filecam = new File(folder_cam,filename);
         if(checkAndRequestPermissions()) {
@@ -160,7 +179,17 @@ public class MainActivity extends AppCompatActivity{
 
 
         initDataBase();
+
+//        login_device();
         getqrcode();
+
+        bt_imgback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                layout_home.setVisibility(View.VISIBLE);
+                layout_imgage.setVisibility(View.INVISIBLE);
+            }
+        });
 
         bt_in.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -189,6 +218,10 @@ public class MainActivity extends AppCompatActivity{
     }
         void initDataBase() {
         DB = new Database(this);
+
+        DB.create_table(tb_device);
+        DB.add_col(tb_device,"device_token","text");
+
         DB.create_table(tb_qrcode);
         DB.add_col(tb_qrcode,"code","text");
         DB.add_col(tb_qrcode,"name","text");
@@ -232,8 +265,8 @@ public class MainActivity extends AppCompatActivity{
 //                                    String idqr = jsonObject.optString("id");
                                     String codeqr = jsonObject.optString("code");
                                     String nameqr = jsonObject.optString("name");
-                                    String activeqr = jsonObject.optString("session_qr");
-                                    DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+activeqr+"'");
+                                    String session_qr = jsonObject.optString("session_qr");
+                                    DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+session_qr+"'");
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -345,14 +378,13 @@ public class MainActivity extends AppCompatActivity{
                                 directory.mkdirs();
                             }
 
-                            if (dir_exists(t_folder_cam)){
-                                // 'Dir exists'
-                            }else{
-// Display Errormessage 'Dir could not creat!!'
+                            if (!dir_exists(t_folder_cam)){
+                                File directory = new File(t_folder_cam);
+                                directory.mkdirs();
                             }
+
                             filecam = new File(t_folder_cam,filename);
-//                Toast.makeText(this, filename+"   ----    "+filecam, Toast.LENGTH_LONG).show();
-                            Log.d(TAG, filename+"   ----    "+filecam);
+                            Log.d("testfilecam", filename+"   ----    "+filecam);
                             capturePicture();
                         }
                     }
@@ -409,6 +441,13 @@ public class MainActivity extends AppCompatActivity{
                             int count_data = c_data.getCount();
                             if(count_data==0){
 //                                Toast.makeText(this, "Lỗi dữ liệu hệ thống", Toast.LENGTH_LONG).show();
+                                if (c_qr.moveToFirst()) {
+                                    while (!c_qr.isAfterLast()) {
+                                        t_name = c_qr.getString(2);
+                                        t_session_app =  c_qr.getString(3);
+                                        c_qr.moveToNext();
+                                    }
+                                }
                                 t_image="grsc_0002 2018-09-11 23:32:31.jpg";
                                 showImage(t_name,t_image);
                             }
@@ -422,6 +461,7 @@ public class MainActivity extends AppCompatActivity{
                                 if (c_qr.moveToFirst()) {
                                     while (!c_qr.isAfterLast()) {
                                         t_name = c_qr.getString(2);
+                                        t_session_app =  c_qr.getString(3);
                                         c_qr.moveToNext();
                                     }
                                 }
@@ -429,7 +469,7 @@ public class MainActivity extends AppCompatActivity{
 
                                 DB.updatedata(tb_data,"out_true='"+t_time+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
-                                Log.d(TAG, "MYLOG : " + "test volley");
+                                Log.d("test volley", "MYLOG : " + "test volley");
 
                                 RequestQueue t_request_update = Volley.newRequestQueue(this);
                                 final String finalT_session_app = t_session_app;
@@ -438,12 +478,12 @@ public class MainActivity extends AppCompatActivity{
                                             @Override
                                             public void onResponse(String response) {
                                                 // Display the first 500 characters of the response string.
-                                                Log.e(TAG, "Successfully signed in : " + response.toString());
+                                                Log.e("valid web", "Successfully signed in : " + response.toString());
                                             }
                                         }, new Response.ErrorListener() {
                                     @Override
                                     public void onErrorResponse(VolleyError error) {
-                                        Log.e(TAG, "Error at sign in : " + error.getMessage());
+                                        Log.e("web false", "Error at sign in : " + error.getMessage());
                                     }
                                 }) {
                                     @Override
@@ -469,7 +509,8 @@ public class MainActivity extends AppCompatActivity{
         }
         if(requestCode != 100 || filename == null)
             return;
-//        Toast.makeText(this, filecam.toString(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, filecam.toString(), Toast.LENGTH_LONG).show();
+        Log.v("LOG_filecam",filecam.toString());
         if(filecam.exists()){
             Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
             DB.updatedata(tb_qrcode,"session_qr='"+t_time+"'","code='"+t_qrcode+"'");
@@ -515,7 +556,7 @@ public class MainActivity extends AppCompatActivity{
                     public void onResponse(String response) {
 //                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
                         t_date = response.trim();
-                        Log.d(TAG, "My t_date: "+t_date);
+                        Log.d("get date", "My t_date: "+t_date);
                     }
                 },
                 new Response.ErrorListener() {
@@ -535,7 +576,7 @@ public class MainActivity extends AppCompatActivity{
                     public void onResponse(String response) {
 //                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
                         t_time = response.trim();
-                        Log.d(TAG, "My t_date: "+t_time);
+                        Log.d("test date", "My t_date: "+t_time);
                     }
                 },
                 new Response.ErrorListener() {
@@ -550,7 +591,82 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
+
+    private void  login_device(){
+        Cursor c_device = DB.loaddata(tb_device,null,null);
+        int count_device = c_device.getCount();
+        if(count_device==0){
+            RequestQueue t_request = Volley.newRequestQueue(this);
+            StringRequest t_srequest = new StringRequest(Request.Method.GET, login_device,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+//                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
+                            device_token = response.trim();
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+//                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ", Toast.LENGTH_SHORT).show();
+                            Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
+                        }
+                    }
+            );
+            t_request.add(t_srequest);
+
+            login_check();
+        }
+
+    }
+
+    public  void refreshAllContent(final long timetoupdate) {
+        new CountDownTimer(timetoupdate, 1000) {
+            public void onTick(long millisUntilFinished) {
+            }
+            public void onFinish() {
+                Log.i("SCROLLS ", "UPDATE CONTENT HERE ");
+                login_check();
+            }
+        }.start();
+    }
+
+    private  void login_check() {
+        RequestQueue t_request2 = Volley.newRequestQueue(this);
+        StringRequest t_srequest2 = new StringRequest(Request.Method.GET, login_check,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+//                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
+                        String t_resule_checklogin = response.trim();
+                        if(t_resule_checklogin.equals("true")){
+                            logged=true;
+
+                            DB.insterdata(tb_device,"'"+device_token+"'");
+                        }
+                        Log.d("CHECK_DEVICE", "check "+device_token+" = "+t_resule_checklogin);
+                        refreshAllContent(5000);}
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+//                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ", Toast.LENGTH_SHORT).show();
+                        Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
+                    }
+                }
+        ){
+            @Override
+            public HashMap<String, String> getParams() {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("device_token", device_token);
+                return params;
+            }
+        };
+        t_request2.add(t_srequest2);
+    }
+
     private void capturePicture() {
+        Toast.makeText(this, "Chụp giấy tờ!", Toast.LENGTH_LONG).show();
 // Kiểm tra Camera trong thiết bị
         if (this.getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_CAMERA)) {
@@ -574,61 +690,20 @@ public class MainActivity extends AppCompatActivity{
            separated = t_image.split(" ");
             t_path = folder_cam+"/"+separated[1]+"/"+t_image;
         }
-//        Toast.makeText(this, t_name+"=="+t_path, Toast.LENGTH_LONG).show();
-//        Toast.makeText(this, imageUri.toString(), Toast.LENGTH_LONG).show();
-        Dialog builder = new Dialog(this);
-        builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        builder.getWindow().setBackgroundDrawable(
-                new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                //nothing;
-            }
-        });
 
-
-        ImageView imageView = new ImageView(this);
         if ((new File(t_path)).exists()) {
             imageUri = Uri.parse(t_path);
-            imageView.setImageURI(imageUri);
+            img_checkout.setImageURI(imageUri);
         }else {
             t_path = "http://greenspeed.vn/qrcode/api/upload/"+separated[1]+"/"+t_image;
             Toast.makeText(this, t_path, Toast.LENGTH_SHORT).show();
             Log.d("TTT0008", t_path);
-            Picasso.get().load(t_path).into(imageView);
+            Picasso.get().load(t_path).into(img_checkout);
         }
 
-        TextView txt_nameqr = new TextView(this);
-        txt_nameqr.setText(t_name);
-        txt_nameqr.setGravity(View.TEXT_ALIGNMENT_CENTER);
-        txt_nameqr.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
-        FrameLayout framelayout = new FrameLayout(this);
-        framelayout.setLayoutParams(new ViewGroup.LayoutParams
-                (ViewGroup.LayoutParams.MATCH_PARENT,  ViewGroup.LayoutParams.MATCH_PARENT));
-
-        framelayout.addView(imageView);
-        framelayout.addView(txt_nameqr);
-
-
-        final RelativeLayout.LayoutParams param0 = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-        );
-        final RelativeLayout.LayoutParams param1 = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-
-        );
-
-
-
-        builder.addContentView(framelayout, param0);
-
-
-
-
-        builder.show();
+        txt_img.setText(t_name);
+        layout_home.setVisibility(View.GONE);
+        layout_imgage.setVisibility(View.VISIBLE);
     }
 
     @SuppressLint("NewApi")
@@ -717,7 +792,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        Log.d(TAG, "Permission callback called-------");
+        Log.d("call permission", "Permission callback called-------");
         switch (requestCode) {
             case REQUEST_ID_MULTIPLE_PERMISSIONS: {
 
@@ -735,7 +810,7 @@ public class MainActivity extends AppCompatActivity{
                     // Check for both permissions
                     if (perms.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                             && perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ) {
-                        Log.d(TAG, "sms & location services permission granted");
+                        Log.d("ask", "sms & location services permission granted");
                         // process the normal flow
 //                        Intent i = new Intent(MainActivity.this, WelcomeActivity.class);
 //                        startActivity(i);
@@ -744,7 +819,7 @@ public class MainActivity extends AppCompatActivity{
 
                         //else any one or both the permissions are not granted
                     } else {
-                        Log.d(TAG, "Some permissions are not granted ask again ");
+                        Log.d("ask", "Some permissions are not granted ask again ");
                         //permission is denied (this is the first time, when "never ask again" is not checked) so ask again explaining the usage of permission
 //                        // shouldShowRequestPermissionRationale will return true
                         //show the dialog or snackbar saying its necessary and try again otherwise proceed with setup.
