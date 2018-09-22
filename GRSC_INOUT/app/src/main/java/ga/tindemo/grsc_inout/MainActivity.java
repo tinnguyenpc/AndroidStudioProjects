@@ -551,64 +551,10 @@ public class MainActivity extends AppCompatActivity{
         if(filecam.exists()){
             Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
 
-            
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setCancelable(false);
-            builder.setTitle("Người liên hệ");
 
-// Set up the input
-            final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            builder.setView(input);
 
-// Set up the buttons
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    t_person = input.getText().toString();
-                    Log.d("PERSON ",t_person);
-                    if(!t_person.equals("")){
-                        Log.d("CHECK_PERSON",t_session_qr+" app "+t_session_app);
-                        update_person(t_session_app,t_person);
-                    } else {
-                        Log.d("CHECK_PERSON","No person");
-                    }
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
 
-            builder.show();
-
-            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-            builder2.setCancelable(false);
-            builder2.setTitle("Kiểm tra sức khoẻ");
-
-            builder2.setMessage("Bạn có đang bị sốt hoặc có bệnh truyền nhiễm như (cảm cúm, bệnh ngoài da…)?\n (Have you been infected or under medical treatment such as (fever, infected skin lesions...)");
-
-// Set up the buttons
-            builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.d("HEATH_ ","YES");
-                    update_heath(t_session_app,"Yes");
-                }
-            });
-            builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-//                    dialog.cancel();
-                    Log.d("HEATH_ ","NO");
-                    update_heath(t_session_app,"No");
-                }
-            });
-
-            builder2.show();
+            inputperson();
 
 
 
@@ -644,6 +590,70 @@ public class MainActivity extends AppCompatActivity{
                         .show();
             }
         }
+    }
+
+    private void inputperson(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(false);
+        builder.setTitle("Người liên hệ");
+
+// Set up the input
+        final EditText input = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                t_person = input.getText().toString();
+                Log.d("PERSON ",t_person);
+                if(!t_person.equals("")){
+                    Log.d("CHECK_PERSON",t_session_qr+" app "+t_session_app);
+                    update_person(t_session_app,t_person);
+                } else {
+                    Log.d("CHECK_PERSON","No person");
+                }
+                checkheath();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+                checkheath();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void checkheath(){
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+        builder2.setCancelable(false);
+        builder2.setTitle("Kiểm tra sức khoẻ");
+
+        builder2.setMessage("Bạn có đang bị sốt hoặc có bệnh truyền nhiễm như (cảm cúm, bệnh ngoài da…)?\n (Have you been infected or under medical treatment such as (fever, infected skin lesions...)");
+
+// Set up the buttons
+        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d("HEATH_ ","YES");
+                update_heath(t_session_app,"Yes");
+            }
+        });
+        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+//                    dialog.cancel();
+                Log.d("HEATH_ ","NO");
+                update_heath(t_session_app,"No");
+            }
+        });
+
+        builder2.show();
     }
 
     private void update_person(final String session_app, final String person){

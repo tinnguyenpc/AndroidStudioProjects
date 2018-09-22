@@ -45,6 +45,8 @@ switch ($homefilter) {
                 <th class="text-center">Hình ảnh</th>
                 <th class="text-center" style="width:10%;">Vào</th>
                 <th class="text-center" style="width:10%;">Ra</th>
+                <th class="text-center">Người liên hệ</th>
+                <th class="text-center">Health checked</th>
                             
             </tr>
         </thead>
@@ -67,6 +69,7 @@ switch ($homefilter) {
                 ?>
                 <img class="img_inout" width="100px" height="50px"  data-toggle="modal" data-target="#imgview" src="/qrcode/api/upload/<? echo $img_save."/".$r_tb_qrdata[url_img];?>">  
             </td>
+            
             <td>
                 <?
                 $time_in = $r_tb_qrdata[session_app];
@@ -83,6 +86,16 @@ switch ($homefilter) {
                     echo (date('H:i', strtotime($time_out)));
                 }
                 
+                ?>
+            </td>
+            <td>
+                <?
+                echo $r_tb_qrdata[person];
+                ?>
+            </td>
+            <td>
+                <?
+                echo $r_tb_qrdata[heath];
                 ?>
             </td>
             

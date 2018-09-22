@@ -71,8 +71,8 @@ $mydate= $Time->format('d/m');
               font-size: 17px;
               text-align:center;"> -->
             <div class="col-md-12">
-            <label class="radio-inline rd_qrall"><input type="radio" name="qr_filter"  checked value="qr_all">Tất cả</label>
-            <label class="radio-inline rd_qron"><input type="radio" name="qr_filter"  value="qr_on">Đang Check in</label>
+            <label class="radio-inline rd_qrall"><input type="radio" name="qr_filter"  value="qr_all">Tất cả</label>
+            <label class="radio-inline rd_qron"><input type="radio" name="qr_filter" checked value="qr_on">Đang Check in</label>
             <label class="radio-inline rd_qroff"><input type="radio" name="qr_filter"  value="qr_off">Checked out</label>
           </div>
         <!-- /.box-body -->
