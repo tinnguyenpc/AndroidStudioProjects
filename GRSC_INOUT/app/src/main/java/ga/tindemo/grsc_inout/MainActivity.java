@@ -27,6 +27,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.text.Layout;
 import android.util.Base64;
 import android.util.Log;
@@ -37,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -84,8 +86,10 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity{
     String gettimeserver = "http://greenspeed.vn/qrcode/api/servertime.php";
     String getdateserver = "http://greenspeed.vn/qrcode/api/serverdate.php";
-    String pushdatae = "http://greenspeed.vn/qrcode/api/input_data.php";
+    String pushdata = "http://greenspeed.vn/qrcode/api/input_data.php";
     String pushupdate = "http://greenspeed.vn/qrcode/api/update_data.php";
+    String pushupdate_person = "http://greenspeed.vn/qrcode/api/update_person.php";
+    String pushupdate_heath = "http://greenspeed.vn/qrcode/api/update_heath.php";
     String getqrcode = "http://greenspeed.vn/qrcode/api/get_qrcode.php";
     String login_device = "http://greenspeed.vn/qrcode/api/login_device.php";
     String login_check = "http://greenspeed.vn/qrcode/api/login_check.php";
@@ -96,6 +100,7 @@ public class MainActivity extends AppCompatActivity{
     String t_date="";
     String t_time="";
     String device_token ="";
+    private String t_person = "";
     boolean logged= false;
 
     Bitmap selectedBitmap;
@@ -114,6 +119,8 @@ public class MainActivity extends AppCompatActivity{
     private Integer t_mode;
     String filename = "";
     String t_qrcode = "";
+    String t_session_app="";
+    String t_session_qr = "";
 
     ConstraintLayout layout_home;
     LinearLayout layout_imgage;
@@ -195,7 +202,18 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 t_mode=0;
+                t_session_app="";
                 if(numrow_table(tb_qrcode,null)>10){
+                    getdatetimeserver();
+                    if((t_date=="")|(t_time=="")){
+                        Calendar c = Calendar.getInstance();
+                        System.out.println("Current time => " + c.getTime());
+                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        t_time = df.format(c.getTime());
+                        SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
+                        t_date = df2.format(c.getTime());
+                        t_session_app=t_time;
+                    }
                     QR_Scan();
                 } else {
                     Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
@@ -207,7 +225,18 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 t_mode=1;
+
                 if(numrow_table(tb_qrcode,null)>10){
+                    getdatetimeserver();
+                    if((t_date=="")|(t_time=="")){
+                        Calendar c = Calendar.getInstance();
+                        System.out.println("Current time => " + c.getTime());
+                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        t_time = df.format(c.getTime());
+                        SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
+                        t_date = df2.format(c.getTime());
+                        t_session_app=t_time;
+                    }
                     QR_Scan();
                 } else {
                     Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
@@ -327,9 +356,11 @@ public class MainActivity extends AppCompatActivity{
 
                     if(t_mode==0){
                         Integer t_active=0;
+                        String t_session_qr ="";
+
                         if (c_qrcode.moveToFirst()) {
                             while (!c_qrcode.isAfterLast()) {
-                                String t_session_qr = c_qrcode.getString(c_qrcode.getColumnIndex("session_qr"));
+                                t_session_qr = c_qrcode.getString(c_qrcode.getColumnIndex("session_qr"));
                                 if(!t_session_qr.equals("null")){
                                     t_active = 1;
 //                                    Toast.makeText(this, "__"+t_session_qr+ "__khác null" , Toast.LENGTH_LONG).show();
@@ -354,23 +385,14 @@ public class MainActivity extends AppCompatActivity{
                                     })
                                     .setNegativeButton("Chuyển sang Check out", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            t_mode = 1;
-                                            QR_Scan();
+                                            bt_out.performClick();
                                         }
                                     })
                                     .setIcon(android.R.drawable.ic_dialog_alert)
                                     .show();
                         } else {
-                           getdatetimeserver();
-                            if((t_date=="")|(t_time=="")){
-                                Calendar c = Calendar.getInstance();
-                                System.out.println("Current time => " + c.getTime());
-                                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                t_time = df.format(c.getTime());
-                                SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
-                                t_date = df2.format(c.getTime());
-                            }
-                            filename = t_qrcode+" "+t_time+".jpg";
+                            t_session_app=t_time;
+                            filename = t_qrcode+" "+t_session_app+".jpg";
                             String t_folder_cam = folder_cam+"/"+t_date;
 
                             if (!dir_exists(folder_cam)){
@@ -390,8 +412,7 @@ public class MainActivity extends AppCompatActivity{
                     }
                     else {
                         Integer t_active=0;
-                        String t_session_app="";
-                        String t_session_qr = "";
+
                         String t_image = "";
                         String t_name = "";
                         if (c_qrcode.moveToFirst()) {
@@ -419,22 +440,12 @@ public class MainActivity extends AppCompatActivity{
                                     })
                                     .setNegativeButton("Chuyển sang Check in", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            t_mode = 0;
-                                            QR_Scan();
+                                            bt_in.performClick();
                                         }
                                     })
                                     .setIcon(android.R.drawable.ic_dialog_alert)
                                     .show();
                         } else {
-                            getdatetimeserver();
-                            if((t_date=="")|(t_time=="")){
-                                Calendar c = Calendar.getInstance();
-                                System.out.println("Current time => " + c.getTime());
-                                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                t_time = df.format(c.getTime());
-                                SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
-                                t_date = df2.format(c.getTime());
-                            }
 
                             Cursor c_data = DB.loaddata(tb_data,null,"session_app='"+t_session_qr+"'");
                             Cursor c_qr = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
@@ -448,8 +459,34 @@ public class MainActivity extends AppCompatActivity{
                                         c_qr.moveToNext();
                                     }
                                 }
-                                t_image="grsc_0002 2018-09-11 23:32:31.jpg";
+//                                t_image="grsc_0002 2018-09-11 23:32:31.jpg";
+                                t_image = t_qrcode+" "+t_session_qr+".jpg";
                                 showImage(t_name,t_image);
+                                DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
+                                RequestQueue t_request_update = Volley.newRequestQueue(this);
+                                final String finalT_session_app = t_session_app;
+                                StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate,
+                                        new Response.Listener<String>() {
+                                            @Override
+                                            public void onResponse(String response) {
+                                                // Display the first 500 characters of the response string.
+                                                Log.e("valid web", "Successfully signed in : " + response.toString());
+                                            }
+                                        }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        Log.e("web false", "Error at sign in : " + error.getMessage());
+                                    }
+                                }) {
+                                    @Override
+                                    public HashMap<String, String> getParams() {
+                                        HashMap<String, String> params = new HashMap<String, String>();
+                                        params.put("session_app", finalT_session_app);
+                                        params.put("qrcode", t_qrcode);
+                                        return params;
+                                    }
+                                };
+                                t_request_update.add(t_srequest_update);
                             }
                             else {
                                 if (c_data.moveToFirst()) {
@@ -467,7 +504,7 @@ public class MainActivity extends AppCompatActivity{
                                 }
                                 showImage(t_name,t_image);
 
-                                DB.updatedata(tb_data,"out_true='"+t_time+"'","session_app='"+t_session_app+"'");
+                                DB.updatedata(tb_data,"out_true='"+t_session_app+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
                                 Log.d("test volley", "MYLOG : " + "test volley");
 
@@ -513,10 +550,72 @@ public class MainActivity extends AppCompatActivity{
         Log.v("LOG_filecam",filecam.toString());
         if(filecam.exists()){
             Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
-            DB.updatedata(tb_qrcode,"session_qr='"+t_time+"'","code='"+t_qrcode+"'");
-            DB.insterdata(tb_data,"'"+t_time+"','"+t_qrcode+"','"+filename+"','"+0+"'");
+
+            
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(false);
+            builder.setTitle("Người liên hệ");
+
+// Set up the input
+            final EditText input = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            builder.setView(input);
+
+// Set up the buttons
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    t_person = input.getText().toString();
+                    Log.d("PERSON ",t_person);
+                    if(!t_person.equals("")){
+                        Log.d("CHECK_PERSON",t_session_qr+" app "+t_session_app);
+                        update_person(t_session_app,t_person);
+                    } else {
+                        Log.d("CHECK_PERSON","No person");
+                    }
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            builder.show();
+
+            AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+            builder2.setCancelable(false);
+            builder2.setTitle("Kiểm tra sức khoẻ");
+
+            builder2.setMessage("Bạn có đang bị sốt hoặc có bệnh truyền nhiễm như (cảm cúm, bệnh ngoài da…)?\n (Have you been infected or under medical treatment such as (fever, infected skin lesions...)");
+
+// Set up the buttons
+            builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.d("HEATH_ ","YES");
+                    update_heath(t_session_app,"Yes");
+                }
+            });
+            builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+//                    dialog.cancel();
+                    Log.d("HEATH_ ","NO");
+                    update_heath(t_session_app,"No");
+                }
+            });
+
+            builder2.show();
+
+
+
+            DB.updatedata(tb_qrcode,"session_qr='"+t_session_app+"'","code='"+t_qrcode+"'");
+            DB.insterdata(tb_data,"'"+t_session_app+"','"+t_qrcode+"','"+filename+"','"+0+"'");
             selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
-            uploadPictureToServer(pushdatae,t_qrcode,t_time,filename);
+            uploadPictureToServer(pushdata,t_qrcode,t_session_app,filename);
             DB.close();
         }
         else{
@@ -547,6 +646,61 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    private void update_person(final String session_app, final String person){
+        RequestQueue t_request_update = Volley.newRequestQueue(this);
+        final String finalT_session_app = session_app;
+        StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate_person,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.e("valid web", "Successfully signed in : " + response.toString());
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("web false", "Error at sign in : " + error.getMessage());
+            }
+        }) {
+            @Override
+            public HashMap<String, String> getParams() {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("session_app", finalT_session_app);
+                params.put("qrcode", t_qrcode);
+                params.put("person", person);
+                return params;
+            }
+        };
+        t_request_update.add(t_srequest_update);
+    }
+
+    private void update_heath(final String session_app, final String heath){
+        RequestQueue t_request_update = Volley.newRequestQueue(this);
+        final String finalT_session_app = session_app;
+        StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate_heath,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.e("valid web", "Successfully signed in : " + response.toString());
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("web false", "Error at sign in : " + error.getMessage());
+            }
+        }) {
+            @Override
+            public HashMap<String, String> getParams() {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("session_app", finalT_session_app);
+                params.put("qrcode", t_qrcode);
+                params.put("heath", heath);
+                return params;
+            }
+        };
+        t_request_update.add(t_srequest_update);
+    }
 
     private void  getdatetimeserver(){
         RequestQueue t_request = Volley.newRequestQueue(this);
@@ -916,7 +1070,7 @@ public class MainActivity extends AppCompatActivity{
             nameValuePairs.add(new BasicNameValuePair("session_app", tt_session_app));
             try {
                 HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(pushdatae);
+                HttpPost httppost = new HttpPost(pushdata);
                 httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 HttpResponse response = httpclient.execute(httppost);
                 String st = EntityUtils.toString(response.getEntity());
