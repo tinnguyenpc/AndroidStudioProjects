@@ -327,7 +327,7 @@ public class MainActivity extends AppCompatActivity{
                                     String nameqr = jsonObject.optString("name");
                                     String session_qr = jsonObject.optString("session_qr");
                                     DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+session_qr+"'");
-                                    Toast.makeText(MainActivity.this, codeqr, Toast.LENGTH_SHORT).show();
+//                                    Toast.makeText(MainActivity.this, codeqr, Toast.LENGTH_SHORT).show();
                                     Log.d("TEST_JSON qrcode= ",codeqr);
                                 }
                             } catch (JSONException e) {
