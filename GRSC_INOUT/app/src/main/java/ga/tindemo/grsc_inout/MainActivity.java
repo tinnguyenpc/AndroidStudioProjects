@@ -3,8 +3,10 @@ package ga.tindemo.grsc_inout;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -33,6 +35,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -245,6 +248,34 @@ public class MainActivity extends AppCompatActivity{
         });
 
     }
+
+    @Override
+    public void onBackPressed() {
+        // Do Here what ever you want do on back press;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
+            //preventing default implementation previous to android.os.Build.VERSION_CODES.ECLAIR
+            Toast.makeText(this, "app_sw", Toast.LENGTH_SHORT).show();
+            Log.d("BTN_RECENT","CLICK");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        ActivityManager activityManager = (ActivityManager) getApplicationContext()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+
+        activityManager.moveTaskToFront(getTaskId(), 0);
+    }
+
+
         void initDataBase() {
         DB = new Database(this);
 
@@ -296,6 +327,8 @@ public class MainActivity extends AppCompatActivity{
                                     String nameqr = jsonObject.optString("name");
                                     String session_qr = jsonObject.optString("session_qr");
                                     DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+session_qr+"'");
+                                    Toast.makeText(MainActivity.this, codeqr, Toast.LENGTH_SHORT).show();
+                                    Log.d("TEST_JSON qrcode= ",codeqr);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
