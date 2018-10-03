@@ -16,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -85,9 +86,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -96,6 +103,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +128,11 @@ public class MainActivity extends AppCompatActivity{
     String device_token ="";
     private String t_person = "";
     boolean logged= false;
+
+    String myname;
+    String mytime;
+    String myperson;
+    String myheath;
 
     Bitmap selectedBitmap;
 
@@ -151,6 +164,7 @@ public class MainActivity extends AppCompatActivity{
     ImageView img_logo;
     ImageView img_logo2;
 
+    MediaPlayer mPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -285,7 +299,7 @@ public class MainActivity extends AppCompatActivity{
                     }
                     QR_Scan();
                 } else {
-                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -318,8 +332,15 @@ public class MainActivity extends AppCompatActivity{
         activityManager.moveTaskToFront(getTaskId(), 0);
     }
 
+    public void onDestroy() {
 
-        void initDataBase() {
+        mPlayer.stop();
+        super.onDestroy();
+
+    }
+
+
+    void initDataBase() {
         DB = new Database(this);
 
         DB.create_table(tb_device);
@@ -454,6 +475,8 @@ public class MainActivity extends AppCompatActivity{
                 int count_qrcode = c_qrcode.getCount();
                 if(count_qrcode==0){
                     Toast.makeText(this, "Không có thẻ này!", Toast.LENGTH_LONG).show(); //Quét QR code không thuộc hệ thống
+                    mPlayer = MediaPlayer.create(MainActivity.this, R.raw.khonghople_3x1_5);
+                    mPlayer.start();
                 }
                 else{
 //                    Toast.makeText(this, "Mode="+t_mode+": "+t_qrcode, Toast.LENGTH_LONG).show();
@@ -502,6 +525,8 @@ public class MainActivity extends AppCompatActivity{
                                     })
                                     .setIcon(android.R.drawable.ic_dialog_alert)
                                     .show();
+                            mPlayer = MediaPlayer.create(MainActivity.this, R.raw.dacheckin3x1_5);
+                            mPlayer.start();
                         } else {
                             t_session_app=t_time;
                             filename = t_qrcode+" "+t_session_app+".jpg";
@@ -557,6 +582,8 @@ public class MainActivity extends AppCompatActivity{
                                     })
                                     .setIcon(android.R.drawable.ic_dialog_alert)
                                     .show();
+                            mPlayer = MediaPlayer.create(MainActivity.this, R.raw.chuacheckin3x1_5);
+                            mPlayer.start();
                         } else {
 
                             Cursor c_data = DB.loaddata(tb_data,null,"session_app='"+t_session_qr+"'");
@@ -573,8 +600,11 @@ public class MainActivity extends AppCompatActivity{
                                 }
 //                                t_image="GRSC_0002 2018-09-11 23:32:31.jpg";
                                 t_image = t_qrcode+" "+t_session_qr+".jpg";
+                                mPlayer = MediaPlayer.create(MainActivity.this, R.raw.xincamon_3x1_5);
+                                mPlayer.start();
                                 showImage(t_name,t_image);
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
+
                                 RequestQueue t_request_update = Volley.newRequestQueue(this);
                                 final String finalT_session_app = t_session_app;
                                 StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate,
@@ -614,7 +644,14 @@ public class MainActivity extends AppCompatActivity{
                                         c_qr.moveToNext();
                                     }
                                 }
+                                mPlayer = MediaPlayer.create(MainActivity.this, R.raw.xincamon_3x1_5);
+                                mPlayer.start();
                                 showImage(t_name,t_image);
+                                Log.d("TEST_TXT","foldercam= "+folder_cam+"/"+t_date+" t_date= "+t_date+".txt");
+                                String[] st_time = t_session_app.split(" ");
+//                            st_time[0]; // this will contain "Fruit"
+//                            st_time[1]; // this will contain " they taste good"
+                                writelog( "GRSC_INOUT/"+t_date,t_date+" CHECK-OUT.csv",st_time[0]+","+st_time[1]+","+t_name);
 
                                 DB.updatedata(tb_data,"out_true='"+t_session_app+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
@@ -662,19 +699,26 @@ public class MainActivity extends AppCompatActivity{
         Log.v("LOG_filecam",filecam.toString());
         if(filecam.exists()){
             Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
-
-
-
-
+            String t_name="";
+            Cursor c_qr = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
+            if (c_qr.moveToFirst()) {
+                while (!c_qr.isAfterLast()) {
+                    t_name = c_qr.getString(2);
+                    c_qr.moveToNext();
+                }
+            }
+            c_qr.close();
             inputperson();
-
-
 
             DB.updatedata(tb_qrcode,"session_qr='"+t_session_app+"'","code='"+t_qrcode+"'");
             DB.insterdata(tb_data,"'"+t_session_app+"','"+t_qrcode+"','"+filename+"','"+"null"+"','"+"null"+"','"+0+"'");
+            Log.d("TEST_TXT","foldercam= "+folder_cam+"/"+t_date+" t_date= "+t_date+".txt");
+
+
             selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
             uploadPictureToServer(pushdata,t_qrcode,t_session_app,filename);
             DB.close();
+
         }
         else{
             Toast.makeText(this, "Lưu hình ảnh thất bại", Toast.LENGTH_SHORT).show();
@@ -724,9 +768,11 @@ public class MainActivity extends AppCompatActivity{
                 if(!t_person.equals("")){
                     Log.d("CHECK_PERSON",t_session_qr+" app "+t_session_app);
                     update_person(t_session_app,t_person);
+                    myperson=t_person;
                 } else {
                     Log.d("CHECK_PERSON","No person");
                 }
+
                 checkheath();
             }
         });
@@ -753,6 +799,10 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.d("HEATH_ ","YES");
+                myheath="Ok";
+                writelog_checkin(myname,t_time,myperson,myheath);
+                mPlayer = MediaPlayer.create(MainActivity.this, R.raw.xincamon_3x1_5);
+                mPlayer.start();
                 update_heath(t_session_app,"Yes");
             }
         });
@@ -761,11 +811,22 @@ public class MainActivity extends AppCompatActivity{
             public void onClick(DialogInterface dialog, int which) {
 //                    dialog.cancel();
                 Log.d("HEATH_ ","NO");
+                myheath="No";
+                writelog_checkin(myname,t_time,myperson,myheath);
+                mPlayer = MediaPlayer.create(MainActivity.this, R.raw.xincamon_3x1_5);
+                mPlayer.start();
                 update_heath(t_session_app,"No");
             }
         });
 
         builder2.show();
+    }
+
+    private void writelog_checkin(String t_name, String t_time, String t_person, String t_heath){
+        String[] st_time = t_time.split(" ");
+//                            st_time[0]; // this will contain "Fruit"
+//                            st_time[1]; // this will contain " they taste good"
+        writelog( "GRSC_INOUT/"+t_date,t_date+" CHECK-IN.csv",st_time[0]+","+st_time[1]+","+t_name+","+t_person+","+t_heath);
     }
 
     private void update_person(final String session_app, final String person){
@@ -1272,6 +1333,51 @@ public class MainActivity extends AppCompatActivity{
         }
         return false;
     }
+
+    public void writelog(String foldername, String filename, String text){
+        File folder = new File(Environment.getExternalStorageDirectory() +
+                File.separator + foldername);
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdirs();
+        }
+        if (success) {
+            // Do something on success
+            File logFile = new File(folder+File.separator+filename);
+            if (!logFile.exists())
+            {
+
+                try
+                {
+                    logFile.createNewFile();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            try
+            {
+                //BufferedWriter for performance, true to set append to file flag
+                BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
+//                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+//                String currentDateandTime = sdf.format(new Date());
+//                text=currentDateandTime+": "+text;
+                buf.append(text);
+                buf.newLine();
+                buf.close();
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } else {
+            // Do something else on failure
+        }
+    }
+
 
 
     public URI URLtoURI(String t_url) {

@@ -16,6 +16,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -83,9 +86,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -94,6 +103,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +120,7 @@ public class MainActivity extends AppCompatActivity{
 //    String login_check = "http://greenspeed.vn/qrcode/api/login_check.php";
 //    String list_report = "http://greenspeed.vn/qrcode/api/list_report.php";
 
-    String folder_cam = Environment.getExternalStorageDirectory()+"/GRSC_INOUT";
+    String folder_cam = Environment.getExternalStorageDirectory()+"/GRSC_INOUT_EVENT";
     File filecam;
     Uri imageUri;
     String t_date="";
@@ -141,13 +151,9 @@ public class MainActivity extends AppCompatActivity{
     LinearLayout layout_imgage;
     Button bt_in;
     Button bt_out;
-    ImageView img_checkout;
-    TextView txt_img;
-    Button bt_imgback;
-    WebView web_report;
-    LinearLayout layout_report;
-    ImageView img_logo;
-    ImageView img_logo2;
+
+    MediaPlayer mPlayer;
+
 
 
     @Override
@@ -166,16 +172,9 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         layout_home = findViewById(R.id.layout_home);
-        layout_imgage = findViewById(R.id.layout_image);
         bt_in = findViewById(R.id.bt_in);
         bt_out = findViewById(R.id.bt_out);
-        img_checkout = findViewById(R.id.img_out);
-        txt_img = findViewById(R.id.txt_image);
-        bt_imgback = findViewById(R.id.bt_imgback);
-        web_report = findViewById(R.id.web_report);
-        layout_report = findViewById(R.id.layout_report);
-        img_logo = findViewById(R.id.img_logo);
-        img_logo2 = findViewById(R.id.img_logo2);
+
 
 
 
@@ -224,23 +223,16 @@ public class MainActivity extends AppCompatActivity{
 //                layout_home.setVisibility(View.VISIBLE);
 //            }
 //        });
-//
+
 //        img_logo.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                showweb(list_report);
+////                showweb(list_report);
 //                layout_report.setVisibility(View.VISIBLE);
 //                layout_home.setVisibility(View.GONE);
 //            }
 //        });
 
-//        bt_imgback.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                layout_home.setVisibility(View.VISIBLE);
-//                layout_imgage.setVisibility(View.GONE);
-//            }
-//        });
 
         bt_in.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -260,7 +252,7 @@ public class MainActivity extends AppCompatActivity{
                     }
                     QR_Scan();
                 } else {
-                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -283,37 +275,45 @@ public class MainActivity extends AppCompatActivity{
                     }
                     QR_Scan();
                 } else {
-                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(MainActivity.this, "Không có dữ liệu, vui lòng kết nối internet để cập nhật!", Toast.LENGTH_LONG).show();
                 }
             }
         });
 
     }
 
-    @Override
-    public void onBackPressed() {
-        // Do Here what ever you want do on back press;
-    }
+//    @Override
+//    public void onBackPressed() {
+//        // Do Here what ever you want do on back press;
+//    }
+//
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
+//            //preventing default implementation previous to android.os.Build.VERSION_CODES.ECLAIR
+//            Toast.makeText(this, "app_sw", Toast.LENGTH_SHORT).show();
+//            Log.d("BTN_RECENT","CLICK");
+//            return true;
+//        }
+//        return super.onKeyDown(keyCode, event);
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//
+//        ActivityManager activityManager = (ActivityManager) getApplicationContext()
+//                .getSystemService(Context.ACTIVITY_SERVICE);
+//
+//        activityManager.moveTaskToFront(getTaskId(), 0);
+//    }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
-            //preventing default implementation previous to android.os.Build.VERSION_CODES.ECLAIR
-            Toast.makeText(this, "app_sw", Toast.LENGTH_SHORT).show();
-            Log.d("BTN_RECENT","CLICK");
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    public void onDestroy() {
 
-        ActivityManager activityManager = (ActivityManager) getApplicationContext()
-                .getSystemService(Context.ACTIVITY_SERVICE);
+        mPlayer.stop();
+        super.onDestroy();
 
-        activityManager.moveTaskToFront(getTaskId(), 0);
     }
 
 
@@ -334,36 +334,17 @@ public class MainActivity extends AppCompatActivity{
 //            DB.delete_DB(tb_qrcode,null);
 //        }
         if(count_qrcode==0){
-            DB.insterdata(tb_qrcode,"'GRSC_0001','01','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0002','02','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0003','03','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0004','04','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0005','05','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0006','06','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0007','07','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0008','08','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0009','09','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0010','10','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0011','11','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0012','12','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0013','13','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0014','14','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0015','15','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0016','16','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0017','17','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0018','18','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0019','19','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0020','20','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0021','21','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0022','22','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0023','22','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0024','24','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0025','25','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0026','26','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0027','27','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0028','28','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0029','29','null'");
-            DB.insterdata(tb_qrcode,"'GRSC_0030','30','null'");
+            int i=0;
+            for(i=1;i<=400;i++){
+                if(i<10){
+                    DB.insterdata(tb_qrcode,"'GRSC_000"+i+"','00"+i+"','null'");
+                } else if((i>=10)&&(i<=99)){
+                    DB.insterdata(tb_qrcode,"'GRSC_00"+i+"','0"+i+"','null'");
+                } else if((i>=100)&&(i<=400)){
+                    DB.insterdata(tb_qrcode,"'GRSC_0"+i+"','"+i+"','null'");
+                }
+
+            }
         }
         c_qrcode.close();
 
@@ -378,51 +359,7 @@ public class MainActivity extends AppCompatActivity{
         DB.close();
     }
 
-    public void getqrcode() {
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, getqrcode,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-//                        Cursor c_qrcode = DB.loaddata(tb_qrcode,null,null);
-                        if (response.equals("{\"AREA\":null}")) {
-                            Toast.makeText(MainActivity.this, "Kiểm tra lại kết nối Internet", Toast.LENGTH_SHORT).show();
-                        } else
 
-                            try {
-
-                                //1. Khai báo đối tượng json root object
-                                JSONObject jsonRootObject = new JSONObject(response);
-                                //2. Đưa jsonRootObject vào array object
-                                JSONArray jsonArray = jsonRootObject.optJSONArray("GRSC_QR");
-                                //3. Duyệt từng đối tượng trong Array và lấy giá trị ra
-                                for (int i = 0; i < jsonArray.length(); i++) {
-                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-//                                    String idqr = jsonObject.optString("id");
-                                    String codeqr = jsonObject.optString("code");
-                                    String nameqr = jsonObject.optString("name");
-//                                    String session_qr = jsonObject.optString("session_qr"); // sync data qr session
-                                    String session_qr = "null";
-                                    DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+session_qr+"'");
-//                                    Toast.makeText(MainActivity.this, codeqr, Toast.LENGTH_SHORT).show();
-                                    Log.d("TEST_JSON qrcode= ",codeqr);
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-//                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ, kiểm tra lại kết nối internet", Toast.LENGTH_SHORT).show();
-                        Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
-                    }
-                }
-        );
-
-        requestQueue.add(stringRequest);
-    }
 
 
     public void QR_Scan() {
@@ -451,7 +388,21 @@ public class MainActivity extends AppCompatActivity{
 
                 int count_qrcode = c_qrcode.getCount();
                 if(count_qrcode==0){
-                    Toast.makeText(this, "Không có thẻ này!", Toast.LENGTH_LONG).show(); //Quét QR code không thuộc hệ thống
+                    mPlayer = MediaPlayer.create(MainActivity.this, R.raw.khonghople_3x1_5);
+                    mPlayer.start();
+                    bt_in.performClick();
+//                    Toast.makeText(this, "Không có thẻ này!", Toast.LENGTH_LONG).show(); //Quét QR code không thuộc hệ thống
+//                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+////                    builder.setMessage("Không có thẻ này!")
+////                            .setCancelable(false)
+////                            .setPositiveButton("Quét thả khác", new DialogInterface.OnClickListener() {
+////                                public void onClick(DialogInterface dialog, int id) {
+////                                    //do things
+////                                    bt_in.performClick();
+////                                }
+////                            });
+////                    AlertDialog alert = builder.create();
+////                    alert.show();
                 }
                 else{
 //                    Toast.makeText(this, "Mode="+t_mode+": "+t_qrcode, Toast.LENGTH_LONG).show();
@@ -462,8 +413,6 @@ public class MainActivity extends AppCompatActivity{
                             c_qrcode.moveToNext();
                         }
                     }
-//                    Toast.makeText(this, name_card, Toast.LENGTH_LONG).show();
-
                     if(t_mode==0){
                         Integer t_active=0;
                         String t_session_qr ="";
@@ -480,29 +429,32 @@ public class MainActivity extends AppCompatActivity{
                             }
                         }
                         if(t_active==1){
-                            AlertDialog.Builder builder;
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-                            } else {
-                                builder = new AlertDialog.Builder(this);
-                            }
-                            builder.setTitle("Thẻ đang sử dụng!")
-                                    .setMessage("Vui lòng chọn thẻ khác hoặc thực hiện kiểm tra Check out!")
-                                    .setPositiveButton("Chọn thẻ khác", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            // continue with delete
-                                        }
-                                    })
-                                    .setNegativeButton("Chuyển sang Check out", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            bt_out.performClick();
-                                        }
-                                    })
-                                    .setIcon(android.R.drawable.ic_dialog_alert)
-                                    .show();
+                            mPlayer = MediaPlayer.create(MainActivity.this, R.raw.dacheckin3x1_5);
+                            mPlayer.start();
+                            bt_in.performClick();
+//                            AlertDialog.Builder builder;
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                                builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+//                            } else {
+//                                builder = new AlertDialog.Builder(this);
+//                            }
+//                            builder.setTitle("Thẻ đang sử dụng!")
+//                                    .setMessage("Vui lòng chọn thẻ khác hoặc thực hiện kiểm tra Check out!")
+//                                    .setPositiveButton("Quét thẻ khác", new DialogInterface.OnClickListener() {
+//                                        public void onClick(DialogInterface dialog, int which) {
+//                                            // continue with delete
+//                                            bt_in.performClick();
+//                                        }
+//                                    })
+//                                    .setNegativeButton("Chuyển sang Check out", new DialogInterface.OnClickListener() {
+//                                        public void onClick(DialogInterface dialog, int which) {
+//                                            bt_out.performClick();
+//                                        }
+//                                    })
+//                                    .setIcon(android.R.drawable.ic_dialog_alert)
+//                                    .show();
                         } else {
                             t_session_app=t_time;
-                            filename = t_qrcode+" "+t_session_app+".jpg";
                             String t_folder_cam = folder_cam+"/"+t_date;
 
                             if (!dir_exists(folder_cam)){
@@ -514,16 +466,31 @@ public class MainActivity extends AppCompatActivity{
                                 File directory = new File(t_folder_cam);
                                 directory.mkdirs();
                             }
+                            String t_name="";
+                            Cursor c_qr = DB.loaddata(tb_qrcode,null,"code='"+t_qrcode+"'");
+                            if (c_qr.moveToFirst()) {
+                                while (!c_qr.isAfterLast()) {
+                                    t_name = c_qr.getString(2);
+                                    c_qr.moveToNext();
+                                }
+                            }
+                            c_qr.close();
 
-                            filecam = new File(t_folder_cam,filename);
-                            Log.d("testfilecam", filename+"   ----    "+filecam);
-                            capturePicture();
+                            DB.updatedata(tb_qrcode,"session_qr='"+t_session_app+"'","code='"+t_qrcode+"'");
+                            DB.insterdata(tb_data,"'"+t_session_app+"','"+t_qrcode+"','"+filename+"','"+"null"+"','"+"null"+"','"+0+"'");
+                            String[] st_time = t_time.split(" ");
+//                            st_time[0]; // this will contain "Fruit"
+//                            st_time[1]; // this will contain " they taste good"
+                            writelog( "GRSC_INOUT_EVENT/"+t_date,t_date+" CHECK-IN.csv",st_time[0]+","+st_time[1]+","+t_name);
+                            DB.close();
+                            mPlayer = MediaPlayer.create(MainActivity.this, R.raw.xincamon_3x1_5);
+                            mPlayer.start();
+                            bt_in.performClick();
                         }
                     }
                     else {
                         Integer t_active=0;
 
-                        String t_image = "";
                         String t_name = "";
                         if (c_qrcode.moveToFirst()) {
                             while (!c_qrcode.isAfterLast()) {
@@ -535,26 +502,30 @@ public class MainActivity extends AppCompatActivity{
                             }
                         }
                         if(t_active==0){
-                            AlertDialog.Builder builder;
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-                            } else {
-                                builder = new AlertDialog.Builder(this);
-                            }
-                            builder.setTitle("Thẻ chưa sử dụng! ")
-                                    .setMessage("Thẻ này chưa được check in, Vui lòng chọn thẻ khác hoặc thực hiện Check in!")
-                                    .setPositiveButton("Chọn thẻ khác", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            // continue with delete
-                                        }
-                                    })
-                                    .setNegativeButton("Chuyển sang Check in", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            bt_in.performClick();
-                                        }
-                                    })
-                                    .setIcon(android.R.drawable.ic_dialog_alert)
-                                    .show();
+                            mPlayer = MediaPlayer.create(MainActivity.this, R.raw.chuacheckin3x1_5);
+                            mPlayer.start();
+                            bt_out.performClick();
+//                            AlertDialog.Builder builder;
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                                builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+//                            } else {
+//                                builder = new AlertDialog.Builder(this);
+//                            }
+//                            builder.setTitle("Thẻ chưa sử dụng! ")
+//                                    .setMessage("Thẻ này chưa được check in, Vui lòng chọn thẻ khác hoặc thực hiện Check in!")
+//                                    .setPositiveButton("Quét thẻ khác", new DialogInterface.OnClickListener() {
+//                                        public void onClick(DialogInterface dialog, int which) {
+//                                            // continue with delete
+//                                            bt_out.performClick();
+//                                        }
+//                                    })
+//                                    .setNegativeButton("Chuyển sang Check in", new DialogInterface.OnClickListener() {
+//                                        public void onClick(DialogInterface dialog, int which) {
+//                                            bt_in.performClick();
+//                                        }
+//                                    })
+//                                    .setIcon(android.R.drawable.ic_dialog_alert)
+//                                    .show();
                         } else {
 
                             Cursor c_data = DB.loaddata(tb_data,null,"session_app='"+t_session_qr+"'");
@@ -569,39 +540,14 @@ public class MainActivity extends AppCompatActivity{
                                         c_qr.moveToNext();
                                     }
                                 }
-//                                t_image="GRSC_0002 2018-09-11 23:32:31.jpg";
-                                t_image = t_qrcode+" "+t_session_qr+".jpg";
-                                showImage(t_name,t_image);
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
-                                RequestQueue t_request_update = Volley.newRequestQueue(this);
-                                final String finalT_session_app = t_session_app;
-                                StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate,
-                                        new Response.Listener<String>() {
-                                            @Override
-                                            public void onResponse(String response) {
-                                                // Display the first 500 characters of the response string.
-                                                Log.e("valid web", "Successfully signed in : " + response.toString());
-                                            }
-                                        }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        Log.e("web false", "Error at sign in : " + error.getMessage());
-                                    }
-                                }) {
-                                    @Override
-                                    public HashMap<String, String> getParams() {
-                                        HashMap<String, String> params = new HashMap<String, String>();
-                                        params.put("session_app", finalT_session_app);
-                                        params.put("qrcode", t_qrcode);
-                                        return params;
-                                    }
-                                };
-                                t_request_update.add(t_srequest_update);
+                                mPlayer = MediaPlayer.create(MainActivity.this, R.raw.chuacheckin3x1_5);
+                                mPlayer.start();
+                                bt_out.performClick();
                             }
                             else {
                                 if (c_data.moveToFirst()) {
                                     while (!c_data.isAfterLast()) {
-                                        t_image = c_data.getString(3);
                                         c_data.moveToNext();
                                     }
                                 }
@@ -612,41 +558,19 @@ public class MainActivity extends AppCompatActivity{
                                         c_qr.moveToNext();
                                     }
                                 }
-                                showImage(t_name,t_image);
-
+                                Log.d("TEST_TXT","foldercam= "+folder_cam+"/"+t_date+" t_date= "+t_date+".txt");
+                                String[] st_time = t_session_app.split(" ");
+//                            st_time[0]; // this will contain "Fruit"
+//                            st_time[1]; // this will contain " they taste good"
+                                writelog( "GRSC_INOUT_EVENT/"+t_date,t_date+" CHECK-OUT.csv",st_time[0]+","+st_time[1]+","+t_name);
                                 DB.updatedata(tb_data,"out_true='"+t_session_app+"'","session_app='"+t_session_app+"'");
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
-                                Log.d("test volley", "MYLOG : " + "test volley");
-
-                                RequestQueue t_request_update = Volley.newRequestQueue(this);
-                                final String finalT_session_app = t_session_app;
-                                StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate,
-                                        new Response.Listener<String>() {
-                                            @Override
-                                            public void onResponse(String response) {
-                                                // Display the first 500 characters of the response string.
-                                                Log.e("valid web", "Successfully signed in : " + response.toString());
-                                            }
-                                        }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        Log.e("web false", "Error at sign in : " + error.getMessage());
-                                    }
-                                }) {
-                                    @Override
-                                    public HashMap<String, String> getParams() {
-                                        HashMap<String, String> params = new HashMap<String, String>();
-                                        params.put("session_app", finalT_session_app);
-                                        params.put("qrcode", t_qrcode);
-                                        return params;
-                                    }
-                                };
-                                t_request_update.add(t_srequest_update);
+                                mPlayer = MediaPlayer.create(MainActivity.this, R.raw.xincamon_3x1_5);
+                                mPlayer.start();
+                                bt_out.performClick();
                             }
                         }
                     }
-
-
                 }
                 c_qrcode.close();
                 DB.close();
@@ -654,175 +578,13 @@ public class MainActivity extends AppCompatActivity{
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
-        if(requestCode != 100 || filename == null)
-            return;
-//        Toast.makeText(this, filecam.toString(), Toast.LENGTH_LONG).show();
-        Log.v("LOG_filecam",filecam.toString());
-        if(filecam.exists()){
-            Toast.makeText(this, "Lưu hình ảnh thành công", Toast.LENGTH_SHORT).show();
 
-
-
-
-            inputperson();
-
-
-
-            DB.updatedata(tb_qrcode,"session_qr='"+t_session_app+"'","code='"+t_qrcode+"'");
-            DB.insterdata(tb_data,"'"+t_session_app+"','"+t_qrcode+"','"+filename+"','"+"null"+"','"+"null"+"','"+0+"'");
-            selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
-            uploadPictureToServer(pushdata,t_qrcode,t_session_app,filename);
-            DB.close();
-        }
-        else{
-            Toast.makeText(this, "Lưu hình ảnh thất bại", Toast.LENGTH_SHORT).show();
-            AlertDialog.Builder builder;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-            } else {
-                builder = new AlertDialog.Builder(this);
-            }
-
-            if(t_qrcode!=""){
-                builder.setTitle("Check in")
-                        .setMessage("Quá trình Check in chưa hoàn tất, thẻ vừa quét vẫn chưa được lưu")
-                        .setPositiveButton("Huỷ Check in", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // continue with delete
-                            }
-                        })
-                        .setNegativeButton("Chụp hình lại", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                capturePicture();
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
-            }
-        }
     }
 
-    private void inputperson(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(false);
-        builder.setTitle("Người liên hệ");
 
-// Set up the input
-        final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-//        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        builder.setView(input);
 
-// Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                t_person = input.getText().toString();
-                Log.d("PERSON ",t_person);
-                if(!t_person.equals("")){
-                    Log.d("CHECK_PERSON",t_session_qr+" app "+t_session_app);
-                    update_person(t_session_app,t_person);
-                } else {
-                    Log.d("CHECK_PERSON","No person");
-                }
-                checkheath();
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-                checkheath();
-            }
-        });
 
-        builder.show();
-    }
 
-    private void checkheath(){
-        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-        builder2.setCancelable(false);
-        builder2.setTitle("Kiểm tra sức khoẻ");
-
-        builder2.setMessage("Bạn có đang bị sốt hoặc có bệnh truyền nhiễm như (cảm cúm, bệnh ngoài da…)?\n (Have you been infected or under medical treatment such as (fever, infected skin lesions...)");
-
-// Set up the buttons
-        builder2.setPositiveButton("Có/Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.d("HEATH_ ","YES");
-                update_heath(t_session_app,"Yes");
-            }
-        });
-        builder2.setNegativeButton("Không/No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-//                    dialog.cancel();
-                Log.d("HEATH_ ","NO");
-                update_heath(t_session_app,"No");
-            }
-        });
-
-        builder2.show();
-    }
-
-    private void update_person(final String session_app, final String person){
-        DB.updatedata(tb_data,"person='"+person+"'","session_app='"+session_app+"'");
-        RequestQueue t_request_update = Volley.newRequestQueue(this);
-        final String finalT_session_app = session_app;
-        StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate_person,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        Log.e("valid web", "Successfully signed in : " + response.toString());
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("web false", "Error at sign in : " + error.getMessage());
-            }
-        }) {
-            @Override
-            public HashMap<String, String> getParams() {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("session_app", finalT_session_app);
-                params.put("qrcode", t_qrcode);
-                params.put("person", person);
-                return params;
-            }
-        };
-        t_request_update.add(t_srequest_update);
-    }
-
-    private void update_heath(final String session_app, final String heath){
-        DB.updatedata(tb_data,"heath='"+heath+"'","session_app='"+session_app+"'");
-        RequestQueue t_request_update = Volley.newRequestQueue(this);
-        final String finalT_session_app = session_app;
-        StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate_heath,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        Log.e("valid web", "Successfully signed in : " + response.toString());
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("web false", "Error at sign in : " + error.getMessage());
-            }
-        }) {
-            @Override
-            public HashMap<String, String> getParams() {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("session_app", finalT_session_app);
-                params.put("qrcode", t_qrcode);
-                params.put("heath", heath);
-                return params;
-            }
-        };
-        t_request_update.add(t_srequest_update);
-    }
 
     private void  getdatetimeserver(){
         RequestQueue t_request = Volley.newRequestQueue(this);
@@ -868,119 +630,6 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    private void  login_device(){
-        Cursor c_device = DB.loaddata(tb_device,null,null);
-        int count_device = c_device.getCount();
-        if(count_device==0){
-            RequestQueue t_request = Volley.newRequestQueue(this);
-            StringRequest t_srequest = new StringRequest(Request.Method.GET, login_device,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-//                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
-                            device_token = response.trim();
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-//                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ", Toast.LENGTH_SHORT).show();
-                            Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
-                        }
-                    }
-            );
-            t_request.add(t_srequest);
-
-            login_check();
-        }
-
-    }
-
-    public  void refreshAllContent(final long timetoupdate) {
-        new CountDownTimer(timetoupdate, 1000) {
-            public void onTick(long millisUntilFinished) {
-            }
-            public void onFinish() {
-                Log.i("SCROLLS ", "UPDATE CONTENT HERE ");
-                login_check();
-            }
-        }.start();
-    }
-
-    private  void login_check() {
-        RequestQueue t_request2 = Volley.newRequestQueue(this);
-        StringRequest t_srequest2 = new StringRequest(Request.Method.GET, login_check,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-//                            Toast.makeText(MainActivity.this, "web: "+response, Toast.LENGTH_SHORT).show();
-                        String t_resule_checklogin = response.trim();
-                        if(t_resule_checklogin.equals("true")){
-                            logged=true;
-
-                            DB.insterdata(tb_device,"'"+device_token+"'");
-                        }
-                        Log.d("CHECK_DEVICE", "check "+device_token+" = "+t_resule_checklogin);
-                        refreshAllContent(5000);}
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-//                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ", Toast.LENGTH_SHORT).show();
-                        Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
-                    }
-                }
-        ){
-            @Override
-            public HashMap<String, String> getParams() {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("device_token", device_token);
-                return params;
-            }
-        };
-        t_request2.add(t_srequest2);
-    }
-
-    private void capturePicture() {
-        Toast.makeText(this, "Chụp giấy tờ!", Toast.LENGTH_LONG).show();
-// Kiểm tra Camera trong thiết bị
-        if (this.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
-// Mở camera mặc định
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(filecam));
-
-// Tiến hành gọi Capture Image intent
-            startActivityForResult(intent, 100);
-        } else {
-            Toast.makeText(this, "Camera is not support on this device", Toast.LENGTH_LONG).show();
-        }
-    }
-
-
-    public void showImage(String t_name, String t_image) {
-//        String tt_path = "http://greenspeed.vn/qrcode/api/upload/2018-09-11/GRSC_0029 2018-09-11%2017:25:36.jpg";
-        String[] separated = new String[0];
-        String t_path ="";
-        if(!t_image.equals("")){
-           separated = t_image.split(" ");
-            t_path = folder_cam+"/"+separated[1]+"/"+t_image;
-        }
-
-        if ((new File(t_path)).exists()) {
-            imageUri = Uri.parse(t_path);
-            img_checkout.setImageURI(imageUri);
-        }else {
-            t_path = "http://greenspeed.vn/qrcode/api/upload/"+separated[1]+"/"+t_image;
-            Toast.makeText(this, t_path, Toast.LENGTH_SHORT).show();
-            Log.d("TTT0008", t_path);
-            Picasso.get().load(t_path).into(img_checkout);
-        }
-
-        txt_img.setText(t_name);
-        layout_home.setVisibility(View.GONE);
-        layout_imgage.setVisibility(View.VISIBLE);
-    }
 
     @SuppressLint("NewApi")
     public static int getDeviceWidth(Activity activity) {
@@ -1156,101 +805,52 @@ public class MainActivity extends AppCompatActivity{
         dialog.show();
     }
 
-    public class UploadToServerTask extends AsyncTask<Void, Void, String> {
 
-        //URL để tải hình lên server
-        private Activity context=null;
-        private ProgressDialog progressDialog=null;
-        private String tt_base64;
-        private String tt_qr_code;
-        private String tt_session_app;
-        private String tt_img_name;
-
-        public UploadToServerTask(Activity context, String t_basae64, String qr_code, String session_app, String img_name)
-        {
-            this.context=context;
-            this.tt_base64=t_basae64;
-            this.tt_qr_code=qr_code;
-            this.tt_session_app=session_app;
-            this.tt_img_name=img_name;
-            this.progressDialog=new ProgressDialog(this.context);
+    public void writelog(String foldername, String filename, String text){
+        File folder = new File(Environment.getExternalStorageDirectory() +
+                File.separator + foldername);
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdirs();
         }
-        protected void onPreExecute() {
-            super.onPreExecute();
-            this.progressDialog.setMessage("Vui lòng chờ hệ thống đang upload hình!");
-//            this.progressDialog.show();
-        }
+        if (success) {
+            // Do something on success
+            File logFile = new File(folder+File.separator+filename);
+            if (!logFile.exists())
+            {
 
-        @Override
-        protected String doInBackground(Void... params) {
-//Coding gửi hình lên Server
-            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("img_base64", tt_base64));
-//            nameValuePairs.add(new BasicNameValuePair("img_name", System.currentTimeMillis() + ".jpg"));
-            nameValuePairs.add(new BasicNameValuePair("img_name", tt_img_name));
-            nameValuePairs.add(new BasicNameValuePair("qr_code", tt_qr_code));
-            nameValuePairs.add(new BasicNameValuePair("session_app", tt_session_app));
-            try {
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(pushdata);
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-                HttpResponse response = httpclient.execute(httppost);
-                String st = EntityUtils.toString(response.getEntity());
-                Log.v("log_tag", "In the try Loop" + st);
-
-            } catch (Exception e) {
-                Log.v("log_tag", "Lỗi kết nối : " + e.toString());
+                try
+                {
+                    logFile.createNewFile();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
-            return null;
-
-        }
-
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            this.progressDialog.hide();
-            this.progressDialog.dismiss();
-        }
-    }
-
-
-    /**
-     * Hàm xử lý lấy encode hình để gửi lên Server
-     */
-    private void uploadPictureToServer(String t_base64, String qr_code, String session_app, String img_name) {
-        String[] separated = session_app.split(" ");
-        String t_img_name= folder_cam+"/"+separated[0]+"/"+img_name;
-        Log.e("path", session_app+"|"+separated[0]+"..."+separated[1]+"----------------" + t_img_name);
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        selectedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, bao);
-        byte[] ba = bao.toByteArray();
-        t_base64 = Base64.encodeToString(ba, Base64.DEFAULT);
-
-        Log.e("base64", "-----" + t_base64);
-
-// Upload hình  lên serverString
-        UploadToServerTask uploadToServer=new UploadToServerTask(this,t_base64, qr_code, session_app, img_name);
-        uploadToServer.execute();
-    }
-
-    public void showweb(String url_web){
-        if(url_web.isEmpty())  {
-//            Toast.makeText(this,"Please enter url",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            // chromium, enable hardware acceleration
-            web_report.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            try
+            {
+                //BufferedWriter for performance, true to set append to file flag
+                BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
+//                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+//                String currentDateandTime = sdf.format(new Date());
+//                text=currentDateandTime+": "+text;
+                buf.append(text);
+                buf.newLine();
+                buf.close();
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         } else {
-            // older android version, disable hardware acceleration
-            web_report.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            // Do something else on failure
         }
-        web_report.getSettings().setLoadsImagesAutomatically(true);
-        web_report.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-        web_report.getSettings().setJavaScriptEnabled(true);
-        web_report.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        web_report.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        web_report.loadUrl(url_web);
     }
+
+
 
     public URI URLtoURI(String t_url) {
         URI uri = null;
