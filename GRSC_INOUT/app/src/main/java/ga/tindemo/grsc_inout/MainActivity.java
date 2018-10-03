@@ -13,8 +13,11 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,6 +29,8 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -40,12 +45,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TabHost;
+import android.widget.TabWidget;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -96,6 +110,7 @@ public class MainActivity extends AppCompatActivity{
     String getqrcode = "http://greenspeed.vn/qrcode/api/get_qrcode.php";
     String login_device = "http://greenspeed.vn/qrcode/api/login_device.php";
     String login_check = "http://greenspeed.vn/qrcode/api/login_check.php";
+    String list_report = "http://greenspeed.vn/qrcode/api/list_report.php";
 
     String folder_cam = Environment.getExternalStorageDirectory()+"/GRSC_INOUT";
     File filecam;
@@ -118,20 +133,23 @@ public class MainActivity extends AppCompatActivity{
     private final String tb_device="tb_device";
     final IntentIntegrator intentIntegrator = new IntentIntegrator(this);
     public static IntentResult resultQR;
-
     private Integer t_mode;
     String filename = "";
     String t_qrcode = "";
     String t_session_app="";
     String t_session_qr = "";
 
-    ConstraintLayout layout_home;
+    LinearLayout layout_home;
     LinearLayout layout_imgage;
     Button bt_in;
     Button bt_out;
     ImageView img_checkout;
     TextView txt_img;
     Button bt_imgback;
+    WebView web_report;
+    LinearLayout layout_report;
+    ImageView img_logo;
+    ImageView img_logo2;
 
 
     @Override
@@ -151,12 +169,20 @@ public class MainActivity extends AppCompatActivity{
 
         layout_home = findViewById(R.id.layout_home);
         layout_imgage = findViewById(R.id.layout_image);
-
         bt_in = findViewById(R.id.bt_in);
         bt_out = findViewById(R.id.bt_out);
         img_checkout = findViewById(R.id.img_out);
         txt_img = findViewById(R.id.txt_image);
         bt_imgback = findViewById(R.id.bt_imgback);
+        web_report = findViewById(R.id.web_report);
+        layout_report = findViewById(R.id.layout_report);
+        img_logo = findViewById(R.id.img_logo);
+        img_logo2 = findViewById(R.id.img_logo2);
+
+
+
+
+
 
         filecam = new File(folder_cam,filename);
         if(checkAndRequestPermissions()) {
@@ -189,15 +215,32 @@ public class MainActivity extends AppCompatActivity{
 
 
         initDataBase();
-
+        showweb(list_report);
 //        login_device();
-        getqrcode();
+//        getqrcode();
+
+        img_logo2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                layout_report.setVisibility(View.GONE);
+                layout_home.setVisibility(View.VISIBLE);
+            }
+        });
+
+        img_logo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showweb(list_report);
+                layout_report.setVisibility(View.VISIBLE);
+                layout_home.setVisibility(View.GONE);
+            }
+        });
 
         bt_imgback.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 layout_home.setVisibility(View.VISIBLE);
-                layout_imgage.setVisibility(View.INVISIBLE);
+                layout_imgage.setVisibility(View.GONE);
             }
         });
 
@@ -289,14 +332,49 @@ public class MainActivity extends AppCompatActivity{
 
         Cursor c_qrcode = DB.loaddata(tb_qrcode,null,null);
         int count_qrcode = c_qrcode.getCount();
-        if(count_qrcode!=0){
-            DB.delete_DB(tb_qrcode,null);
+//        if(count_qrcode!=0){
+//            DB.delete_DB(tb_qrcode,null);
+//        }
+        if(count_qrcode==0){
+            DB.insterdata(tb_qrcode,"'GRSC_0001','01','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0002','02','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0003','03','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0004','04','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0005','05','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0006','06','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0007','07','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0008','08','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0009','09','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0010','10','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0011','11','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0012','12','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0013','13','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0014','14','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0015','15','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0016','16','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0017','17','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0018','18','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0019','19','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0020','20','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0021','21','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0022','22','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0023','22','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0024','24','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0025','25','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0026','26','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0027','27','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0028','28','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0029','29','null'");
+            DB.insterdata(tb_qrcode,"'GRSC_0030','30','null'");
         }
+        c_qrcode.close();
 
         DB.create_table(tb_data);
         DB.add_col(tb_data,"session_app","text");
         DB.add_col(tb_data,"qr_code","text");
         DB.add_col(tb_data,"img_file","text");
+        DB.add_col(tb_data,"person","text");
+        DB.add_col(tb_data,"heath","text");
         DB.add_col(tb_data,"out_true","text");
 
         DB.close();
@@ -325,7 +403,8 @@ public class MainActivity extends AppCompatActivity{
 //                                    String idqr = jsonObject.optString("id");
                                     String codeqr = jsonObject.optString("code");
                                     String nameqr = jsonObject.optString("name");
-                                    String session_qr = jsonObject.optString("session_qr");
+//                                    String session_qr = jsonObject.optString("session_qr"); // sync data qr session
+                                    String session_qr = "null";
                                     DB.insterdata(tb_qrcode,"'"+codeqr+"','"+nameqr+"', '"+session_qr+"'");
 //                                    Toast.makeText(MainActivity.this, codeqr, Toast.LENGTH_SHORT).show();
                                     Log.d("TEST_JSON qrcode= ",codeqr);
@@ -338,7 +417,7 @@ public class MainActivity extends AppCompatActivity{
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ, kiểm tra lại kết nối internet", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ, kiểm tra lại kết nối internet", Toast.LENGTH_SHORT).show();
                         Log.d("Lỗi", "Lỗi" + "\n" + error.toString());
                     }
                 }
@@ -492,7 +571,7 @@ public class MainActivity extends AppCompatActivity{
                                         c_qr.moveToNext();
                                     }
                                 }
-//                                t_image="grsc_0002 2018-09-11 23:32:31.jpg";
+//                                t_image="GRSC_0002 2018-09-11 23:32:31.jpg";
                                 t_image = t_qrcode+" "+t_session_qr+".jpg";
                                 showImage(t_name,t_image);
                                 DB.updatedata(tb_qrcode,"session_qr='null'","code='"+t_qrcode+"'");
@@ -592,7 +671,7 @@ public class MainActivity extends AppCompatActivity{
 
 
             DB.updatedata(tb_qrcode,"session_qr='"+t_session_app+"'","code='"+t_qrcode+"'");
-            DB.insterdata(tb_data,"'"+t_session_app+"','"+t_qrcode+"','"+filename+"','"+0+"'");
+            DB.insterdata(tb_data,"'"+t_session_app+"','"+t_qrcode+"','"+filename+"','"+"null"+"','"+"null"+"','"+0+"'");
             selectedBitmap = BitmapFactory.decodeFile(filecam.getAbsolutePath());
             uploadPictureToServer(pushdata,t_qrcode,t_session_app,filename);
             DB.close();
@@ -670,14 +749,14 @@ public class MainActivity extends AppCompatActivity{
         builder2.setMessage("Bạn có đang bị sốt hoặc có bệnh truyền nhiễm như (cảm cúm, bệnh ngoài da…)?\n (Have you been infected or under medical treatment such as (fever, infected skin lesions...)");
 
 // Set up the buttons
-        builder2.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder2.setPositiveButton("Có/Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.d("HEATH_ ","YES");
                 update_heath(t_session_app,"Yes");
             }
         });
-        builder2.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        builder2.setNegativeButton("Không/No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 //                    dialog.cancel();
@@ -690,6 +769,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void update_person(final String session_app, final String person){
+        DB.updatedata(tb_data,"person='"+person+"'","session_app='"+session_app+"'");
         RequestQueue t_request_update = Volley.newRequestQueue(this);
         final String finalT_session_app = session_app;
         StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate_person,
@@ -718,6 +798,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void update_heath(final String session_app, final String heath){
+        DB.updatedata(tb_data,"heath='"+heath+"'","session_app='"+session_app+"'");
         RequestQueue t_request_update = Volley.newRequestQueue(this);
         final String finalT_session_app = session_app;
         StringRequest t_srequest_update = new StringRequest(Request.Method.POST, pushupdate_heath,
@@ -880,7 +961,7 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void showImage(String t_name, String t_image) {
-//        String tt_path = "http://greenspeed.vn/qrcode/api/upload/2018-09-11/grsc_0029 2018-09-11%2017:25:36.jpg";
+//        String tt_path = "http://greenspeed.vn/qrcode/api/upload/2018-09-11/GRSC_0029 2018-09-11%2017:25:36.jpg";
         String[] separated = new String[0];
         String t_path ="";
         if(!t_image.equals("")){
@@ -1153,6 +1234,46 @@ public class MainActivity extends AppCompatActivity{
         uploadToServer.execute();
     }
 
+    public void showweb(String url_web){
+        if(url_web.isEmpty())  {
+//            Toast.makeText(this,"Please enter url",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // chromium, enable hardware acceleration
+            web_report.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        } else {
+            // older android version, disable hardware acceleration
+            web_report.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+        if(isNetworkStatusAvialable (getApplicationContext())) {
+//            Toast.makeText(getApplicationContext(), "internet avialable", Toast.LENGTH_SHORT).show();
+            web_report.getSettings().setLoadsImagesAutomatically(true);
+            web_report.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+            web_report.getSettings().setJavaScriptEnabled(true);
+            web_report.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+            web_report.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+            web_report.loadUrl(url_web);
+        } else {
+            Toast.makeText(getApplicationContext(), "internet is not avialable", Toast.LENGTH_SHORT).show();
+
+        }
+
+    }
+
+    public static boolean isNetworkStatusAvialable (Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null)
+        {
+            NetworkInfo netInfos = connectivityManager.getActiveNetworkInfo();
+            if(netInfos != null)
+                if(netInfos.isConnected())
+                    return true;
+        }
+        return false;
+    }
+
+
     public URI URLtoURI(String t_url) {
         URI uri = null;
         URL url = null;
@@ -1215,4 +1336,7 @@ public class MainActivity extends AppCompatActivity{
         return mIcon11;
     }
 
+
 }
+
+

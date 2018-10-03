@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">GRSC_INOUT</string>
+    <string name="url_web"> <u>http://greenspeed.vn/qrcode</u></string>
+</resources>

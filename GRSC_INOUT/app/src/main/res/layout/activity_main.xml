@@ -1,71 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/background_light"
-    tools:context=".MainActivity">
+    android:orientation="vertical"
+    android:background="@android:color/background_light">
 
 
-    <android.support.constraint.ConstraintLayout
+    <LinearLayout
         android:id="@+id/layout_home"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible">
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:weightSum="10">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:orientation="horizontal"
+            android:weightSum="10">
+
+            <ImageView
+                android:id="@+id/img_logo"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+
+                android:layout_weight="9"
+                android:paddingLeft="100dp"
+                app:srcCompat="@drawable/grsc_logo" />
+
+        </LinearLayout>
+
 
         <Button
             android:id="@+id/bt_in"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="360dp"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="68dp"
-            android:background="@drawable/button_vao"
+            android:layout_weight="4"
+            android:background="@drawable/icon_in_2"
             android:textSize="24sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/img_logo" />
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/bt_out"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="360dp"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="80dp"
-            android:background="@drawable/button_ra"
+            android:layout_weight="4"
+            android:background="@drawable/icon_out_2"
             android:textColorLink="@color/colorPrimary"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toTopOf="@+id/textView2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bt_in"
-            app:layout_constraintVertical_bias="0.26" />
-
-        <ImageView
-            android:id="@+id/img_logo"
-            android:layout_width="300dp"
-            android:layout_height="103dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/grsc_logo" />
+            android:textSize="24sp" />
 
 
-    </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layout_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:visibility="visible"
+        android:visibility="gone"
         android:weightSum="10">
 
         <TextView
@@ -98,6 +107,45 @@
             android:textColor="@color/colorAccent"
             android:textSize="24sp"
             android:textStyle="bold" />
+
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:id="@+id/layout_report"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible"
+        android:weightSum="10">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:orientation="horizontal"
+            android:weightSum="10">
+
+            <ImageView
+                android:id="@+id/img_logo2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+
+                app:srcCompat="@drawable/grsc_logo" />
+
+        </LinearLayout>
+
+        <WebView
+            android:id="@+id/web_report"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="8"
+            android:hardwareAccelerated="true"/>
+
+
+    </LinearLayout>
+
+</LinearLayout>
