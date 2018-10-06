@@ -1,4 +1,4 @@
-package ga.tindemo.grsc_inout;
+package ga.tindemo.grsc_inout_event;
 
 import android.content.Context;
 import android.database.Cursor;

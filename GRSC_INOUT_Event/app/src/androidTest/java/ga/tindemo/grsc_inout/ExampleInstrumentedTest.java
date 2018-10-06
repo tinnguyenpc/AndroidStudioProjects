@@ -1,4 +1,4 @@
-package ga.tindemo.grsc_inout;
+package ga.tindemo.grsc_inout_event;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("ga.tindemo.grsc_inout", appContext.getPackageName());
+        assertEquals("ga.tindemo.grsc_inout_event", appContext.getPackageName());
     }
 }

@@ -1,4 +1,4 @@
-package ga.tindemo.grsc_inout;
+package ga.tindemo.grsc_inout_event;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
