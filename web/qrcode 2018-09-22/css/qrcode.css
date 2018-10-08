@@ -1,0 +1,22 @@
+.modal-dialog {
+    width: 50%;
+    height: 100%;
+    /* margin: 0;
+    padding: 0; */
+  }
+  
+  .modal-content {
+    height: auto;
+    min-height: 50%;
+    border-radius: 0;
+  }
+
+.content_main{
+  z-index: 101;
+}
+
+#tb_dataqr{
+  z-index: 100;
+}
+  
+  

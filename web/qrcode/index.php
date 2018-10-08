@@ -1,5 +1,13 @@
 <?php
-include('connect.php'); // Includes Login Script
+include('connect.php'); // Includes Mysql connect
+session_start();// Starting Session
+    // Storing Session
+     $user_check=$_SESSION['login_user'];
+     $password_check=$_SESSION['login_passwword'];
+    if(!isset($user_check)&&(!isset($password_check))){
+      mysql_close($con); // Closing Connection
+      header('Location: dangnhap.php'); // Redirecting To Login Page
+    }
 ?>
 <!DOCTYPE html>
 <html>
